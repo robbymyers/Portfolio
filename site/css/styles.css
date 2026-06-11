@@ -425,7 +425,7 @@ ul { list-style: none; }
 }
 
 .work-brand { margin-bottom: 16px; }
-.work-brand img { max-height: 96px; width: auto; }
+.work-brand img { max-height: 80px; max-width: min(340px, 100%); width: auto; object-fit: contain; object-position: left; }
 .work-wordmark {
   font-family: var(--font-heading);
   font-weight: 700;
@@ -523,20 +523,24 @@ ul { list-style: none; }
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border: 1px solid rgba(18, 18, 18, 0.3);
+  border: 1px solid transparent;
   border-radius: 999px;
   padding: 6px 14px;
 }
-.cw-badge--active { border-color: var(--color-green); color: var(--color-green); }
+.cw-badge--active { background: var(--color-red); color: var(--color-white); }
+.cw-badge--soon   { background: #8E8E8E; color: var(--color-white); }
+.cw-badge--dev    { background: var(--color-black); color: var(--color-white); }
 .cw-test {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-red);
 }
 .cw-test .status-dot { background: var(--color-red); }
-.cw-test:hover { text-decoration: underline; }
+.cw-test .cw-test-arrow { transition: transform 0.2s ease; }
+.cw-test:hover .cw-test-arrow { transform: translateX(4px); }
 
 .cw-title {
   font-family: var(--font-heading);
@@ -553,21 +557,29 @@ ul { list-style: none; }
   letter-spacing: 0.06em;
 }
 .cw-desc { font-size: 14px; line-height: 1.55; opacity: 0.8; max-width: 380px; }
-.cw-card--mockup .cw-title,
-.cw-card--mockup .cw-desc { max-width: 58%; }
 .cw-stack {
   margin-top: auto;
   font-size: 12px;
   opacity: 0.6;
 }
-.cw-mockup {
-  position: absolute;
-  right: -24px;
-  bottom: -24px;
-  width: 180px;
-  pointer-events: none;
-}
+.cw-mockup { pointer-events: none; }
 .cw-mockup img { width: 100%; height: auto; }
+
+/* Mobile: mockups flow below the text, centered */
+.cw-mockup {
+  width: min(280px, 80%);
+  margin: 16px auto 0;
+}
+
+/* Desktop: mockups anchor to the card's right edge (per Figma) */
+@media (min-width: 768px) {
+  .cw-card--mockup .cw-title,
+  .cw-card--mockup .cw-desc { max-width: 54%; }
+  .cw-mockup { position: absolute; margin: 0; }
+  .cw-mockup--shads   { width: 240px; right: 28px; top: 20px; }
+  .cw-mockup--famcal  { width: 330px; right: -56px; top: 50%; transform: translateY(-50%); }
+  .cw-mockup--fitness { width: 250px; right: 32px; top: 24px; }
+}
 
 /* ============================================================
    CAPABILITIES
