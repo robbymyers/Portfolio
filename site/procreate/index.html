@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Procreate · Robby Myers</title>
-  <meta name="description" content="Procreate — Case Study by Robby Myers, Product Designer." />
+  <title>Procreate — UX Case Study · Robby Myers</title>
+  <meta name="description" content="Introducing non-destructive editing in Procreate — a concept that brings professional-grade adjustment layers to the iPad without compromising its signature 120fps experience. Case study by Robby Myers." />
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
   <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/case-study.css" />
 </head>
-<body style="background:var(--color-black);">
+<body class="case-study" style="--accent:#DC4FDB; --accent-2:#1297FC;">
 
+  <!-- NAV (dark variant) -->
   <nav class="nav nav--dark" id="nav">
     <a href="../index.html" class="nav-logo" aria-label="Robby Myers home">
       <img src="../img/R-Logo-Red.svg" alt="R monogram" />
@@ -31,19 +33,253 @@
     <a href="../index.html#contact">Contact</a>
   </div>
 
-  <main class="stub">
+  <!-- SECTION 1 — HERO -->
+  <header class="cs-hero">
     <div class="wrap">
-      <p class="stub-label" style="color:#0076FF;">Case Study</p>
-      <h1 class="stub-title">Procreate</h1>
-      <p class="stub-note">Full case study coming soon. This page is a placeholder while the story gets the attention it deserves.</p>
-      <a class="stub-back" href="../index.html">&larr; Back to Home</a>
-    </div>
-  </main>
+      <div class="cs-hero-grid">
+        <div class="cs-hero-left">
+          <div class="cs-logo"><img src="../img/projects/Procreate.png" alt="Procreate wordmark" style="max-width:380px;" /></div>
+          <h1 class="cs-tagline" style="font-family:var(--font-heading);font-weight:500;font-size:clamp(22px,2.6vw,30px);max-width:560px;">Introducing Non-Destructive Editing in Procreate</h1>
+          <div class="cs-pills">
+            <span>Concept Project</span>
+            <span>Product Design</span>
+            <span>UX / UI</span>
+            <span>Research</span>
+          </div>
+        </div>
 
+        <aside class="cs-summary reveal">
+          <div class="cs-summary-label"><span class="status-dot"></span>Executive Summary</div>
+          <div class="cs-summary-block">
+            <b>Objective</b>
+            <p>Enable professional-grade adjustment layers without leaving Procreate</p>
+          </div>
+          <div class="cs-summary-block">
+            <b>Outcome</b>
+            <p>Preserved creative momentum and eliminated multi-app workflows for illustrators</p>
+          </div>
+          <hr />
+          <div class="cs-summary-foot">
+            <b>Validated with users</b>
+            <span>Artists and illustrators</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION 2 — ORIGIN STORY -->
+  <section class="cs-section">
+    <div class="wrap">
+      <div class="cs-two-col">
+        <div class="reveal">
+          <h2 class="cs-heading">What started as a tweet…</h2>
+          <p style="font-family:var(--font-heading);font-size:18px;margin-top:8px;color:var(--accent);">...became a project.</p>
+          <p style="font-size:15px;line-height:1.65;opacity:0.8;margin-top:24px;max-width:531px;">This project began as a simple question: why doesn't Procreate support adjustment layers? What started as a tweet evolved into a deeper exploration of how creators manage non-destructive editing in professional workflows.</p>
+        </div>
+        <div class="frame reveal"><img src="../img/projects/Procreate-Tweet.png" alt="The tweet that started the project" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 — FROM FRICTION TO FLOW -->
+  <section class="cs-section" style="padding-top:0;">
+    <div class="wrap">
+      <p class="cs-label">Problem — Solution</p>
+      <h2 class="cs-heading reveal">From Friction to Flow</h2>
+
+      <div class="cs-detail-grid" style="margin-top:40px;">
+        <div class="cs-list-card reveal">
+          <div class="head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+            Cognitive Load
+          </div>
+          <ul>
+            <li><span class="num">01</span><span>Adjustments are destructive and tied to individual layers with no undo path</span></li>
+            <li><span class="num">02</span><span>Artists forced to export to Photoshop for basic color grading</span></li>
+            <li><span class="num">03</span><span>Layer duplication workarounds increase file bloat and risk</span></li>
+            <li><span class="num">04</span><span>Creative momentum breaks during tool-switching</span></li>
+          </ul>
+        </div>
+
+        <div class="cs-list-card cs-list-card--alt reveal" style="--accent:var(--accent-2);">
+          <div class="head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.7.6 1.5 1.5 1.5 2.1h4c0-.6.8-1.5 1.5-2.1A6 6 0 0 0 12 3Z"/></svg>
+            The Solution
+          </div>
+          <ul>
+            <li><span class="num">01</span><span>Non-destructive adjustment layers in the existing layer stack</span></li>
+            <li><span class="num">02</span><span>Global controls that affect all layers beneath matching Photoshop mental model</span></li>
+            <li><span class="num">03</span><span>Fly-open contextual controls for quick iteration on canvas</span></li>
+            <li><span class="num">04</span><span>Performance toggle (120fps / 60fps) for adjustment-heavy workflows</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 — FULL-BLEED MOCKUP -->
+  <section class="cs-image">
+    <div class="wrap">
+      <div class="frame"><img src="../img/projects/Procreate-MockUp-Hero.png" alt="Procreate adjustment layers concept on iPad" /></div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 — RESEARCH & DISCOVERY -->
+  <section class="cs-section">
+    <div class="wrap">
+      <h2 class="cs-heading reveal">Research &amp; Discovery</h2>
+
+      <div class="cs-detail-grid" style="margin-top:40px;align-items:start;">
+        <div class="mini-stats reveal">
+          <div class="mini-stat">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 5a3 3 0 0 1 0 6"/><path d="M18 20a6 6 0 0 0-3-5.2"/></svg></div>
+            <div class="value">100%</div>
+            <div class="label">of interviewed artists</div>
+            <div class="detail">leave Procreate for color grading. Breaks creative flow mid-process</div>
+          </div>
+          <div class="mini-stat">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg></div>
+            <div class="value">Global</div>
+            <div class="label">control expectation</div>
+            <div class="detail">Users expect adjustments to affect all layers beneath which is consistent with Photoshop's model</div>
+          </div>
+          <div class="mini-stat">
+            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m17 3 4 4L7 21l-5 1 1-5L17 3Z"/></svg></div>
+            <div class="value">120fps</div>
+            <div class="label">performance threshold</div>
+            <div class="detail">Artists accept temporary, visible tradeoffs — but hidden performance changes erode trust</div>
+          </div>
+        </div>
+
+        <div class="cs-card reveal">
+          <div class="cs-card-title">Competitive Landscape</div>
+          <div class="land-row">
+            <span class="name">Procreate</span>
+            <div><b>Full non-destructive editing</b><span>Steep subscriptions, desktop-only mindset</span></div>
+          </div>
+          <div class="land-row">
+            <span class="name">Affinity Photo</span>
+            <div><b>One-time price, good capability</b><span>Desktop-first, heavier UX</span></div>
+          </div>
+          <div class="land-row">
+            <span class="name">Photoshop</span>
+            <div><b>Loved for tactile, fluid experience</b><span>No non-destructive adjustments</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cs-impact-bar reveal" style="margin-top:40px;">
+        <div class="label">Design Challenge</div>
+        <p class="em">How might Procreate enable non-destructive, global adjustments without compromising its signature 120fps performance?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 — FULL-BLEED LAYERS IMAGE -->
+  <section class="cs-image">
+    <div class="wrap">
+      <div class="frame" style="max-width:1150px;margin:0 auto;"><img src="../img/projects/Procreate-Layers.png" alt="Adjustment layers interface detail" /></div>
+    </div>
+  </section>
+
+  <hr class="cs-divider" />
+
+  <!-- SECTION 7 — DESIGN EXECUTION -->
+  <section class="cs-section">
+    <div class="wrap">
+      <h2 class="cs-heading reveal">Design Execution</h2>
+
+      <div class="stat-grid">
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m12 2 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/></svg></div>
+          <span class="kicker">Adjustment Layers</span>
+          <div class="label label--accent">Lightweight layer integration</div>
+          <div class="detail">Adjustment layers live alongside standard layers and affect all content beneath them. A dedicated entry point next to the existing '+' button keeps the interaction familiar.</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="12" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="13" r="2.5"/><path d="M12 22a10 10 0 1 1 10-10c0 2-1.5 3-3 3h-1.5a1.5 1.5 0 0 0-1 2.6 1.5 1.5 0 0 1-1 2.4Z"/></svg></div>
+          <span class="kicker">Contextual Controls</span>
+          <div class="label label--accent">Fly-open adjustment panels</div>
+          <div class="detail">Controls expand inline within the layer stack, allowing quick iteration without navigating away from the canvas. Artists stay in flow while making precise edits.</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M13 2 3 14h8l-1 8 10-12h-8l1-8Z"/></svg></div>
+          <span class="kicker">Performance Toggle</span>
+          <div class="label label--accent">Controlled frame-rate switching</div>
+          <div class="detail">Users can toggle between 120fps and 60fps during adjustment-heavy workflows. The tradeoff is visible and intentional preserving trust and control.</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <span class="kicker">Preview States</span>
+          <div class="label label--accent">Visual impact indicators</div>
+          <div class="detail">Clear visual indicators show which layers and groups are affected by each adjustment, reducing confusion in complex multi-layer compositions.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="cs-divider" />
+
+  <!-- SECTION 8 — PAIRED MOCKUPS -->
+  <section class="cs-image">
+    <div class="wrap">
+      <div class="cs-image-pair">
+        <div class="frame"><img src="../img/projects/Procreate-Mockup-03.jpg" alt="Procreate adjustment layers — screen detail" /></div>
+        <div class="frame"><img src="../img/projects/Procreate-Mockup-04.jpg" alt="Procreate performance toggle — screen detail" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 — IMPACT & REFLECTION -->
+  <section class="cs-section">
+    <div class="wrap">
+      <h2 class="cs-heading reveal">Impact &amp; Reflection</h2>
+
+      <div class="stat-grid stat-grid--3">
+        <div class="stat-card reveal">
+          <div class="label label--accent">Single-app</div>
+          <span class="kicker">Workflow</span>
+          <div class="detail" style="margin-top:12px;">Artists can complete professional color grading without leaving Procreate</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="label label--accent">Zero</div>
+          <span class="kicker">Destructive edits</span>
+          <div class="detail" style="margin-top:12px;">All adjustments are fully reversible and non-permanent</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="label label--accent">Preserved</div>
+          <span class="kicker">120fps experience</span>
+          <div class="detail" style="margin-top:12px;">Performance toggle gives users visible, controlled tradeoff; no hidden degradation</div>
+        </div>
+      </div>
+
+      <div class="cs-impact-bar reveal">
+        <div class="label">Executive Summary</div>
+        <p>This concept extends Procreate's capabilities without compromising its core experience. By introducing non-destructive adjustment layers, artists can experiment freely, make iterative changes, and refine their work without risking permanent edits — bringing Procreate closer to a complete, professional-grade creative tool.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT / FOOTER -->
   <footer class="contact" id="contact">
     <div class="wrap">
       <p class="contact-pre">Let's Build Something Worthwhile</p>
       <a class="contact-cta" href="mailto:robby.myers@gmail.com">Get In<br />Touch<span class="arrow">&nearr;</span></a>
+      <hr class="rule" />
+      <div class="contact-row">
+        <div class="contact-links">
+          <a href="mailto:robby.myers@gmail.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            robby.myers@gmail.com
+          </a>
+          <a href="https://linkedin.com/in/robbymyers" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0ZM.25 8.25h4.5V24h-4.5V8.25Zm7.5 0h4.31v2.15h.06c.6-1.13 2.07-2.32 4.26-2.32 4.56 0 5.4 3 5.4 6.9V24h-4.5v-7.12c0-1.7-.03-3.88-2.36-3.88-2.36 0-2.72 1.85-2.72 3.76V24h-4.5V8.25Z"/></svg>
+            Robby Myers
+          </a>
+        </div>
+        <p class="contact-quote">"Love, not too well, the work of thy hands."</p>
+      </div>
       <hr class="rule" />
       <div class="footer-bar">
         <span>&copy; 2026 Robby Myers</span>

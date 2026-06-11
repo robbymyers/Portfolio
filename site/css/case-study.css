@@ -387,3 +387,80 @@ body.case-study {
 
 /* ---------- Section divider ---------- */
 .cs-divider { border: 0; border-top: 1px solid rgba(243, 245, 244, 0.15); margin: 0; }
+
+/* ---------- Two-column splits ---------- */
+.cs-two-col { display: grid; gap: 32px; align-items: center; }
+@media (min-width: 768px) { .cs-two-col { grid-template-columns: 1fr 1fr; gap: 56px; } }
+.cs-two-col .frame { border-radius: 12px; overflow: hidden; }
+.cs-two-col .frame img { width: 100%; height: auto; display: block; }
+
+/* ---------- Numbered list cards (e.g. Friction / Solution) ---------- */
+.cs-list-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(243, 245, 244, 0.12);
+  border-radius: 12px;
+  padding: 24px;
+}
+.cs-list-card .head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.cs-list-card .head svg { width: 18px; height: 18px; }
+.cs-list-card li { display: flex; gap: 14px; padding: 10px 0; font-size: 14px; line-height: 1.5; }
+.cs-list-card li .num {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  color: var(--accent);
+  padding-top: 2px;
+  flex: none;
+}
+.cs-list-card--alt .head,
+.cs-list-card--alt li .num { color: var(--accent-2, var(--accent)); }
+
+/* ---------- Mini stats (uncarded stat columns) ---------- */
+.mini-stats { display: grid; gap: 32px; }
+@media (min-width: 600px) { .mini-stats { grid-template-columns: repeat(3, 1fr); } }
+.mini-stat .icon { color: var(--accent); margin-bottom: 12px; }
+.mini-stat .icon svg { width: 20px; height: 20px; }
+.mini-stat .value {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--accent);
+}
+.mini-stat .label { font-size: 13px; font-weight: 600; color: var(--accent); margin-top: 6px; }
+.mini-stat .detail { font-size: 13px; opacity: 0.7; margin-top: 10px; line-height: 1.55; }
+
+/* ---------- Generic bordered card + landscape rows ---------- */
+.cs-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(243, 245, 244, 0.12);
+  border-radius: 12px;
+  padding: 24px;
+}
+.cs-card-title { font-size: 15px; font-weight: 600; color: var(--accent); margin-bottom: 16px; }
+.land-row { display: grid; grid-template-columns: 96px 1fr; gap: 16px; padding: 12px 0; }
+.land-row .name { color: var(--accent); font-size: 12px; padding-top: 2px; }
+.land-row b { display: block; font-size: 14px; margin-bottom: 2px; }
+.land-row span { font-size: 13px; opacity: 0.7; }
+
+/* ---------- Card kicker (small accent line) ---------- */
+.stat-card .kicker { display: block; font-size: 12px; color: var(--accent); margin-bottom: 6px; }
+.stat-card .label--accent { color: var(--accent); font-size: 16px; }
+.cs-impact-bar p.em { font-style: italic; font-weight: 600; }
+
+/* ---------- Hero summary objective/outcome blocks ---------- */
+.cs-summary-block { padding: 10px 0; }
+.cs-summary-block b { display: block; font-size: 15px; color: var(--accent); margin-bottom: 4px; }
+.cs-summary-block p { font-size: 14px; line-height: 1.5; }
+
+/* ---------- Paired full-bleed images ---------- */
+.cs-image-pair { display: grid; gap: 12px; }
+@media (min-width: 768px) { .cs-image-pair { grid-template-columns: 1fr 1fr; } }
+.cs-image-pair .frame { border-radius: 12px; overflow: hidden; background: var(--color-surface); }
+.cs-image-pair img { width: 100%; height: auto; display: block; }

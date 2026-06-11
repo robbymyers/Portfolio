@@ -634,7 +634,7 @@ Desktop:  ≥ 1200px  (1240px content width, 100px margins)
 | Family Crust | `#FE4D00` |
 | Chroma | `#0FBA7E` |
 | Shaman | `#CFCDC1` |
-| Procreate | `#0076FF` |
+| Procreate | `#DC4FDB` |
 
 ---
 
