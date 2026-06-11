@@ -308,3 +308,82 @@ body.case-study {
   border-bottom: 1px dashed rgba(243, 245, 244, 0.25);
   transform: translateY(-4px);
 }
+
+/* ---------- Hero link pill (e.g. live site URL) ---------- */
+.cs-link-pill {
+  display: inline-block;
+  font-family: var(--font-heading);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  padding: 8px 18px;
+  margin-top: 24px;
+  transition: background 0.2s, color 0.2s;
+}
+.cs-link-pill:hover { background: var(--accent); color: var(--color-white); }
+
+/* Metric icons */
+.cs-metric .icon { display: block; margin-bottom: 10px; opacity: 0.85; }
+.cs-metric .icon svg { width: 20px; height: 20px; }
+.cs-metrics--plain .value { color: var(--color-white); }
+
+/* Hero phone mockup (right column) */
+.cs-hero-phone { display: flex; justify-content: center; }
+.cs-hero-phone img { width: min(272px, 80%); height: auto; }
+
+/* ---------- Triple row: Friction → Solution → Validation ---------- */
+@media (min-width: 768px) {
+  .fs-row--triple { grid-template-columns: 1fr 40px 1fr 40px 1fr; }
+}
+.fs-card--validation {
+  background: transparent;
+  border: 1px solid rgba(253, 67, 56, 0.45);
+}
+.fs-card--validation .tag { color: rgba(243, 245, 244, 0.55); }
+.fs-card .tag-icon {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 6px;
+}
+.fs-card .tag-icon svg { width: 13px; height: 13px; }
+
+/* ---------- Generic info cards (process / craft) ---------- */
+.stat-grid--3 { grid-template-columns: 1fr; }
+@media (min-width: 600px)  { .stat-grid--3 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1000px) { .stat-grid--3 { grid-template-columns: repeat(3, 1fr); } }
+
+.stat-card .card-icon { color: var(--accent); margin-bottom: 16px; }
+.stat-card .card-icon svg { width: 18px; height: 18px; }
+.stat-card .eyebrow {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+/* ---------- Key impact statement bar ---------- */
+.cs-impact-bar {
+  background: var(--color-surface);
+  border: 1px solid rgba(243, 245, 244, 0.12);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin-top: 48px;
+}
+.cs-impact-bar .label {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.cs-impact-bar p { font-size: 16px; line-height: 1.5; }
+
+/* ---------- Section divider ---------- */
+.cs-divider { border: 0; border-top: 1px solid rgba(243, 245, 244, 0.15); margin: 0; }
