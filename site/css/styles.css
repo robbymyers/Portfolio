@@ -937,7 +937,7 @@ body.page-dark { background: var(--color-black); color: var(--color-white); }
 .about-portrait:hover .roll,
 .about-portrait.touched .roll { opacity: 1; }
 
-.about-heading {
+.about-title {
   font-family: var(--font-heading);
   font-weight: 700;
   font-size: clamp(48px, 8vw, 110px);
