@@ -17,11 +17,12 @@
   <nav class="nav" id="nav">
     <a href="index.html" class="nav-logo" aria-label="Robby Myers home">
       <img src="img/R-Logo-K.svg" alt="R monogram" />
+      <span class="nav-wordmark">Robby Myers</span>
     </a>
     <div class="nav-links">
-      <a href="#about">About</a>
-      <a href="#work">Selected Works</a>
-      <a href="#current">Current Work</a>
+      <a href="about/index.html">About</a>
+      <a href="featured/index.html">Featured</a>
+      <a href="all-work/index.html">All Work</a>
       <a href="#contact">Contact</a>
     </div>
     <span class="nav-status"><span class="status-dot"></span> Open to Work</span>
@@ -30,9 +31,9 @@
     </button>
   </nav>
   <div class="mobile-menu" id="mobileMenu">
-    <a href="#about">About</a>
-    <a href="#work">Selected Works</a>
-    <a href="#current">Current Work</a>
+    <a href="about/index.html">About</a>
+    <a href="featured/index.html">Featured</a>
+    <a href="all-work/index.html">All Work</a>
     <a href="#contact">Contact</a>
   </div>
 
@@ -66,7 +67,7 @@
     </div>
   </div>
 
-  <!-- SECTION 3 — ABOUT -->
+  <!-- SECTION 3 — ABOUT BRIEF -->
   <section class="about" id="about">
     <div class="wrap">
       <span class="section-label">(01—Profile)</span>
@@ -77,176 +78,86 @@
     </div>
   </section>
 
-  <!-- SECTION 4 — SELECTED WORKS -->
-  <section class="works" id="work">
+  <!-- SECTION 4 — FEATURED -->
+  <section class="featured" id="featured">
     <div class="wrap">
-      <span class="section-label">(02—Case Studies)</span>
-      <h2 class="section-heading reveal">Selected Works</h2>
+      <div class="section-bar">
+        <h2 class="section-heading reveal">Featured</h2>
+        <div class="section-bar-right">
+          <span class="section-label">(01—Case Studies)</span>
+          <a class="view-all" href="featured/index.html">View All</a>
+        </div>
+      </div>
       <hr class="rule" />
 
-      <!-- 01 Shadrachs Coffee -->
-      <a class="work-row reveal" href="shadrachs/index.html">
-        <span class="work-num">01</span>
-        <div class="work-main">
-          <div class="work-brand"><img src="img/projects/ShadsLogo.png" alt="Shadrachs Coffee logo" /></div>
-          <div class="work-tags"><span>Information Architecture</span><span>Discovery UX</span><span>Branding</span><span>Shopify</span></div>
-          <p class="work-desc">A WordPress-to-Shopify migration and full redesign for a growing local coffee brand that had outgrown its digital presence.</p>
-          <div class="work-meta">
+      <div class="featured-grid">
+        <a class="feat-card reveal" href="shadrachs/index.html">
+          <span class="feat-num">01</span>
+          <div class="feat-brand"><img src="img/projects/ShadsLogo.png" alt="Shadrachs Coffee logo" /></div>
+          <p class="feat-desc">A WordPress-to-Shopify migration and full redesign for a growing local coffee brand that had outgrown its digital presence.</p>
+          <div class="feat-tags"><span>Information Architecture</span><span>Discovery UX</span><span>Branding</span><span>Shopify</span></div>
+          <div class="feat-meta">
             <div><span>Role</span><b>Lead Product Designer</b></div>
-            <div><span>Status</span><b>Shipped Product</b></div>
+            <div><span>Outcome</span><b>Shipped Product</b></div>
           </div>
-        </div>
-        <div class="work-visual"><img src="img/Shads-hero.png" alt="Shadrachs Coffee interface on laptop and phone" /></div>
-      </a>
+          <div class="feat-visual"><img src="img/Shads-hero.png" alt="Shadrachs Coffee interface on laptop and phone" /></div>
+        </a>
 
-
-      <!-- 02 Family Crust -->
-      <a class="work-row reveal" href="family-crust/index.html">
-        <span class="work-num">02</span>
-        <div class="work-main">
-          <div class="work-brand"><img src="img/projects/FamCrust.svg" alt="Family Crust logo" /></div>
-          <div class="work-tags"><span>Product Design</span><span>UX Research</span><span>Visual Design &amp; Brand System</span><span>Information Architecture</span></div>
-          <p class="work-desc">Transforming weeknight pizza from a reactive necessity into a reliable family ritual through a curbside-first mobile ordering experience.</p>
-          <div class="work-meta">
+        <a class="feat-card reveal" href="family-crust/index.html">
+          <span class="feat-num">02</span>
+          <div class="feat-brand"><img src="img/projects/FamCrust.svg" alt="Family Crust logo" /></div>
+          <p class="feat-desc">Transforming weeknight pizza from a reactive necessity into a reliable family ritual through a curbside-first mobile ordering experience.</p>
+          <div class="feat-tags"><span>Product Design</span><span>UX Research</span><span>Visual Design &amp; Brand System</span><span>Information Architecture</span></div>
+          <div class="feat-meta">
             <div><span>Role</span><b>Lead Product Designer</b></div>
-            <div><span>Status</span><b>Client Project</b></div>
+            <div><span>Outcome</span><b>Client Project</b></div>
           </div>
-        </div>
-        <div class="work-visual"><img src="img/projects/FamilyCrust-Hero.png" alt="Family Crust pizza brand imagery" /></div>
-      </a>
-
-      <!-- 03 Relay -->
-      <a class="work-row reveal" href="relay/index.html">
-        <span class="work-num">03</span>
-        <div class="work-main">
-          <div class="work-brand"><img src="img/projects/Relay.png" alt="Relay logotype" /></div>
-          <div class="work-tags"><span>Information Architecture</span><span>Discovery UX</span><span>Branding</span><span>Prototype</span></div>
-          <p class="work-desc">A multi-sport fitness event discovery app — a unified, personalized feed and seamless registration for athletes who compete across disciplines.</p>
-          <div class="work-meta">
-            <div><span>Role</span><b>Lead Product Designer</b></div>
-            <div><span>Status</span><b>End-to-end case study</b></div>
-          </div>
-        </div>
-        <div class="work-visual"><img src="img/projects/Relay-hero.png" alt="Relay app on a phone" /></div>
-      </a>
-
-      <!-- 04 Procreate -->
-      <a class="work-row reveal" href="procreate/index.html">
-        <span class="work-num">04</span>
-        <div class="work-main">
-          <div class="work-brand"><img src="img/projects/Procreate.png" alt="Procreate wordmark" /></div>
-          <div class="work-tags"><span>Heuristic Eval</span><span>Competitive Analysis</span><span>Redesign</span><span>Prototype</span></div>
-          <p class="work-desc">A deep-dive usability analysis of Procreate examining gesture systems, tool discoverability, and advanced feature access for power users on iPad.</p>
-          <div class="work-meta">
-            <div><span>Role</span><b>UX Researcher / Analyst</b></div>
-            <div><span>Status</span><b>End-to-end case study</b></div>
-          </div>
-        </div>
-        <div class="work-visual"><img src="img/projects/Procreate-Hero.png" alt="Procreate on iPad" /></div>
-      </a>
-
-
-    </div>
-  </section>
-
-  <!-- SECTION 5 — CURRENT WORK -->
-  <section class="current" id="current">
-    <div class="wrap">
-      <span class="section-label">(03—In Progress)</span>
-      <h2 class="section-heading reveal">Current Work</h2>
-      <hr class="rule" />
-
-      <div class="current-grid">
-        <article class="cw-card cw-card--mockup reveal">
-          <div class="cw-badges"><span class="cw-badge cw-badge--active">Active</span></div>
-          <h3 class="cw-title">Shadrachs Coffee</h3>
-          <p class="cw-desc">Designing a real coffee ordering experience for a specialty coffee brand; research through delivery on a live client engagement.</p>
-          <span class="cw-stack">Ordering App</span>
-          <div class="cw-mockup cw-mockup--shads"><img src="img/projects/Shads-App.png" alt="Shadrachs app on a phone" /></div>
-        </article>
-
-        <article class="cw-card cw-card--mockup reveal">
-          <div class="cw-badges">
-            <span class="cw-badge cw-badge--soon">Shipping Soon</span>
-            <a class="cw-test" href="#"><span class="status-dot"></span>Give it a test <span class="cw-test-arrow">&rarr;</span></a>
-          </div>
-          <h3 class="cw-title">Family Calendar</h3>
-          <p class="cw-desc">Designing a family calendar Web-Based App that lives on the iPad in the kitchen. For the families that have a lot going on and no way to keep track.</p>
-          <span class="cw-stack">Figma &rarr; Claude Code &rarr; GitHub &rarr; Ship with Vercel</span>
-          <div class="cw-mockup cw-mockup--famcal"><img src="img/projects/FamCal-App.png" alt="Family Calendar app on an iPad" /></div>
-        </article>
-
-        <article class="cw-card cw-card--mockup cw-card--center reveal">
-          <div class="cw-badges">
-            <span class="cw-badge cw-badge--dev">In Development</span>
-            <a class="cw-test" href="#"><span class="status-dot"></span>Give it a test <span class="cw-test-arrow">&rarr;</span></a>
-          </div>
-          <h3 class="cw-title">Fitness Tracker</h3>
-          <p class="cw-desc">Designing a multi-modality fitness tracker for myself.</p>
-          <span class="cw-stack">Figma &rarr; Claude Code &rarr; GitHub &rarr; Ship with Vercel</span>
-          <div class="cw-mockup cw-mockup--fitness"><img src="img/projects/FitnessTracker.png" alt="Fitness tracker app on a phone" /></div>
-        </article>
+          <div class="feat-visual"><img src="img/projects/FamilyCrust-Hero.png" alt="Family Crust pizza brand imagery" /></div>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- SECTION 6 — CAPABILITIES -->
-  <section class="capabilities" id="capabilities">
+  <!-- SECTION 5 — ALL WORK -->
+  <section class="allwork" id="all-work">
     <div class="wrap">
-      <span class="section-label">(04—Toolkit)</span>
-      <h2 class="section-heading reveal">Capabilities</h2>
+      <div class="section-bar">
+        <h2 class="section-heading reveal">All Work</h2>
+        <div class="section-bar-right">
+          <span class="section-label">(02—All Work)</span>
+          <a class="view-all" href="all-work/index.html">View All</a>
+        </div>
+      </div>
       <hr class="rule" />
 
-      <div class="cap-grid">
-        <div class="cap-col reveal">
-          <h3>Design</h3>
-          <ul>
-            <li>Product Design</li><li>UX/UI</li><li>Interaction Design</li>
-            <li>Design Systems</li><li>Prototyping</li><li>Visual Design</li>
-            <li>Motion</li><li>3D</li><li>Illustration</li>
-          </ul>
-        </div>
-        <div class="cap-col reveal">
-          <h3>Research</h3>
-          <ul>
-            <li>User Interviews</li><li>Usability Testing</li><li>Information Architecture</li>
-            <li>Competitive Analysis</li><li>Journey Mapping</li><li>Site Maps</li><li>User Flows</li><li>Survey Design</li>
-          </ul>
-        </div>
-        <div class="cap-col reveal">
-          <h3>Tools</h3>
-          <ul>
-            <li>Figma</li><li>Adobe CC</li><li>Midjourney</li><li>Claude</li><li>Blender</li>
-            <li>After Effects</li><li>Photoshop</li><li>Illustrator</li>
-          </ul>
-        </div>
+      <div class="aw-grid">
+        <a class="aw-card reveal" href="ridge-city-grind/index.html">
+          <div class="aw-thumb"><img src="img/projects/RidgeCityGrind.png" alt="Ridge City Grind brand mark" /></div>
+          <div class="aw-head"><span class="aw-num">01</span><span class="aw-tag">Branding</span></div>
+          <h3 class="aw-title">Ridge City Grind</h3>
+          <p class="aw-desc">A 24 hour trail run through the Arkansas woods</p>
+        </a>
+        <a class="aw-card reveal" href="rad-shad/index.html">
+          <div class="aw-thumb"><img src="img/projects/RadShaddy.png" alt="Rad Shaddy energy drink" /></div>
+          <div class="aw-head"><span class="aw-num">02</span><span class="aw-tag">3D Animation</span></div>
+          <h3 class="aw-title">Rad Shaddy Energy Drink</h3>
+          <p class="aw-desc">Social media commercial for Shadrachs Coffee Energy Drink</p>
+        </a>
+        <a class="aw-card reveal" href="unity-health/index.html">
+          <div class="aw-thumb"><img src="img/projects/UnityHealth-Home.png" alt="Unity Health logo" /></div>
+          <div class="aw-head"><span class="aw-num">03</span><span class="aw-tag">Design</span></div>
+          <h3 class="aw-title">Unity Health</h3>
+          <p class="aw-desc">Unity Health — Search, AR</p>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- SECTION 7 — PREVIOUS WORK -->
-  <section class="previous" id="previous">
-    <div class="wrap">
-      <span class="section-label">(05—Previous Work)</span>
-      <h2 class="section-heading reveal">Previous Work</h2>
-      <hr class="rule" />
-
-      <div class="prev-grid">
-        <a class="prev-tile reveal" href="lone-wolf/index.html" aria-label="Lone Wolf"><img src="img/projects/LoneWolf.png" alt="Lone Wolf apparel brand mark" /></a>
-        <a class="prev-tile reveal" href="rad-shad/index.html" aria-label="Rad Shad"><img src="img/projects/RadShaddy.png" alt="Rad Shad character illustration" /></a>
-        <a class="prev-tile reveal" href="vip/index.html" aria-label="VIP"><img src="img/projects/VIP.png" alt="VIP logo and apparel design" /></a>
-        <a class="prev-tile reveal" href="ridge-city-grind/index.html" aria-label="Ridge City Grind"><img src="img/projects/RidgeCityGrind.png" alt="Ridge City Grind brand lettering" /></a>
-        <a class="prev-tile reveal" href="stickers/index.html" aria-label="Stickers"><img src="img/projects/Stickers.png" alt="Holiday character sticker set" /></a>
-        <a class="prev-tile reveal" href="nine-point-day/index.html" aria-label="Nine Point Day"><img src="img/projects/NinePointDay.png" alt="Nine Point Day race brand mark" /></a>
-      </div>
-    </div>
-  </section>
-
-  <!-- SECTION 8 — CONTACT / FOOTER -->
+  <!-- SECTION 6 — CONTACT / FOOTER -->
   <footer class="contact" id="contact">
     <div class="wrap">
       <p class="contact-pre">Let's Build Something Worthwhile</p>
-      <a class="contact-cta reveal" href="mailto:robby.myers@gmail.com">Get In<br />Touch<span class="arrow">&nearr;</span></a>
+      <a class="contact-cta" href="mailto:robby.myers@gmail.com">Get In<br />Touch<span class="arrow">&nearr;</span></a>
       <hr class="rule" />
       <div class="contact-row">
         <div class="contact-links">

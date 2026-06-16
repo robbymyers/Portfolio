@@ -1,5 +1,14 @@
 // robbymyers.com — global interactions
 
+// About headshot rollover — hover handled by CSS; tap toggles on touch devices
+const aboutPortrait = document.getElementById('aboutPortrait');
+if (aboutPortrait) {
+  aboutPortrait.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    aboutPortrait.classList.toggle('touched');
+  }, { passive: false });
+}
+
 // Sticky nav: add shadow once scrolled past top
 const nav = document.getElementById('nav');
 if (nav) {
