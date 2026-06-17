@@ -915,22 +915,17 @@ body.page-dark { background: var(--color-black); color: var(--color-white); }
 
 .about-portrait {
   position: relative;
-  overflow: hidden;
-  border-radius: 60% 60% 14px 14px / 42% 42% 3% 3%;
-  background: var(--color-surface);
-  aspect-ratio: 420 / 520;
   max-width: 480px;
   width: 100%;
   cursor: pointer;
 }
-.about-portrait img {
+/* The PNGs carry their own arch shape + transparent corners — no CSS mask needed */
+.about-portrait img { display: block; width: 100%; height: auto; }
+.about-portrait .roll {
   position: absolute;
   inset: 0;
-  width: 100%;
   height: 100%;
   object-fit: cover;
-}
-.about-portrait .roll {
   opacity: 0;
   transition: opacity 0.45s ease;
 }
