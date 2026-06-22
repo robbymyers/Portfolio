@@ -35,18 +35,21 @@ if (toggle && menu) {
   );
 }
 
-// All Work category filters
+// All Work category filters — default shows a 6-shot preview; each pill reveals
+// only its category; clicking the active pill again restores the preview.
 const filterBar = document.querySelector('.aw-filters');
 if (filterBar) {
   const cards = [...document.querySelectorAll('.aw-grid .aw-card')];
+  const showPreview = () =>
+    cards.forEach((c) => c.classList.toggle('is-hidden', c.classList.contains('aw-preview-hidden')));
   filterBar.querySelectorAll('.aw-filter').forEach((btn) => {
     btn.addEventListener('click', () => {
+      const wasActive = btn.classList.contains('is-active');
+      filterBar.querySelectorAll('.aw-filter').forEach((b) => b.classList.remove('is-active'));
+      if (wasActive) { showPreview(); return; }
+      btn.classList.add('is-active');
       const cat = btn.dataset.filter;
-      filterBar.querySelectorAll('.aw-filter').forEach((b) => b.classList.toggle('is-active', b === btn));
-      cards.forEach((card) => {
-        const show = cat === 'all' || card.dataset.cat === cat;
-        card.classList.toggle('is-hidden', !show);
-      });
+      cards.forEach((c) => c.classList.toggle('is-hidden', c.dataset.cat !== cat));
     });
   });
 }
