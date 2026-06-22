@@ -35,6 +35,22 @@ if (toggle && menu) {
   );
 }
 
+// All Work category filters
+const filterBar = document.querySelector('.aw-filters');
+if (filterBar) {
+  const cards = [...document.querySelectorAll('.aw-grid .aw-card')];
+  filterBar.querySelectorAll('.aw-filter').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.filter;
+      filterBar.querySelectorAll('.aw-filter').forEach((b) => b.classList.toggle('is-active', b === btn));
+      cards.forEach((card) => {
+        const show = cat === 'all' || card.dataset.cat === cat;
+        card.classList.toggle('is-hidden', !show);
+      });
+    });
+  });
+}
+
 // Scroll-enter reveal (fade-in / slide-up)
 const revealEls = document.querySelectorAll('.reveal');
 if ('IntersectionObserver' in window && revealEls.length) {

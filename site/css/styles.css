@@ -905,6 +905,46 @@ body.page-dark { background: var(--color-black); color: var(--color-white); }
 }
 .aw-desc { font-size: 14px; line-height: 1.5; opacity: 0.7; margin-top: 8px; max-width: 380px; }
 
+/* "Test it out" link + "Coming Soon" pill on All Work cards (personal projects) */
+.aw-test, .aw-soon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  border-radius: 999px;
+  padding: 7px 16px;
+  margin-top: 10px;
+}
+.aw-test .arr { transition: transform 0.2s ease; }
+.aw-test:hover { background: var(--color-red); color: var(--color-white); }
+.aw-test:hover .arr { transform: translateX(3px); }
+.aw-soon { cursor: default; opacity: 0.85; }
+
+/* Category filter tabs */
+.aw-filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0 8px; }
+.aw-filter {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 7px 16px;
+  cursor: pointer;
+  background: none;
+  color: inherit;
+  opacity: 0.5;
+  transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+}
+.aw-filter:hover { opacity: 0.85; }
+.aw-filter.is-active { color: var(--color-red); opacity: 1; }
+.aw-card.is-hidden { display: none; }
+
 /* ============================================================
    ABOUT PAGE
    ============================================================ */
