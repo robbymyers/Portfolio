@@ -54,6 +54,22 @@ if (filterBar) {
   });
 }
 
+// Next Route in-dash embed — scale the native 1560×660 prototype to fit its container
+const nrScale = document.querySelector('.nr-scale');
+if (nrScale) {
+  const screen = nrScale.parentElement;
+  const NR_W = 1560, NR_H = 660;
+  const fitDash = () => {
+    const s = screen.clientWidth / NR_W;
+    nrScale.style.transform = `scale(${s})`;
+    screen.style.height = `${NR_H * s}px`;
+  };
+  fitDash();
+  window.addEventListener('resize', fitDash, { passive: true });
+  const nrFrame = nrScale.querySelector('iframe');
+  if (nrFrame) nrFrame.addEventListener('load', fitDash);
+}
+
 // Scroll-enter reveal (fade-in / slide-up)
 const revealEls = document.querySelectorAll('.reveal');
 if ('IntersectionObserver' in window && revealEls.length) {
