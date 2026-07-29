@@ -719,3 +719,60 @@ body.case-study {
   transition: background 0.2s, color 0.2s;
 }
 .nr-open:hover { background: var(--accent); color: var(--color-white); }
+
+/* ---------- Next Route — motion sequence timeline (Gantt-style) ---------- */
+.mo-timeline {
+  margin-top: 32px;
+  border: 1px solid rgba(243, 245, 244, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+.mo-row {
+  display: grid;
+  grid-template-columns: 168px 1fr;
+  align-items: center;
+  border-bottom: 1px solid rgba(243, 245, 244, 0.08);
+}
+.mo-row:last-child { border-bottom: 0; }
+.mo-name {
+  padding: 16px 20px;
+  font-family: var(--font-heading);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.mo-track { position: relative; height: 58px; }
+.mo-bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mo-bar--accent { background: var(--accent); color: #1a1a1a; }
+.mo-bar--muted { background: rgba(243, 245, 244, 0.22); color: var(--color-white); }
+.mo-axis {
+  display: flex;
+  justify-content: space-between;
+  max-width: 100%;
+  margin-top: 10px;
+  padding-left: 168px;
+  font-size: 11px;
+  opacity: 0.5;
+}
+@media (max-width: 640px) {
+  .mo-row { grid-template-columns: 104px 1fr; }
+  .mo-name { padding: 12px; font-size: 10px; }
+  .mo-bar { font-size: 9px; padding: 0 6px; }
+  .mo-axis { padding-left: 104px; }
+}

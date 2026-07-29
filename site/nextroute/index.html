@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Next Route — Personal Project · Robby Myers</title>
-  <meta name="description" content="Next Route — a third-party trail navigation app designed to live inside the Toyota Tacoma Trailhead's Audio Multimedia system. Interactive in-dash prototype by Robby Myers." />
+  <title>Next Route — Case Study · Robby Myers</title>
+  <meta name="description" content="Next Route — a third-party trail navigation app that lives inside the Toyota Tacoma Trailhead's Audio Multimedia system. Making the transition from driving to parked to trailhead one seamless experience." />
   <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
   <link rel="stylesheet" href="../css/styles.css" />
   <link rel="stylesheet" href="../css/case-study.css" />
@@ -35,22 +35,39 @@
   </div>
 
   <!-- HERO -->
-  <header class="cs-hero" style="padding-bottom:40px;">
+  <header class="cs-hero">
     <div class="wrap">
       <a class="back-btn" href="../about/index.html" style="margin-bottom:40px;"><span>&larr;</span> Back</a>
-      <p class="cs-label">Personal Project</p>
-      <div class="cs-logo" style="margin-top:8px;"><img src="../img/projects/nextroute-light.svg" alt="Next Route" style="max-width:420px;" /></div>
-      <p class="cs-tagline" style="max-width:620px;">A third-party trail navigation app that lives inside Toyota's Audio Multimedia system — and reads as part of it.</p>
-      <div class="cs-pills">
-        <span>Product Design</span>
-        <span>UX / UI</span>
-        <span>Automotive HMI</span>
-        <span>Prototype</span>
-      </div>
-      <div class="cs-metrics">
-        <div class="cs-metric"><div class="value">14&Prime;</div><div class="label">Multimedia Display</div></div>
-        <div class="cs-metric"><div class="value">12.3&Prime;</div><div class="label">Digital Cluster</div></div>
-        <div class="cs-metric"><div class="value">1560 &times; 660</div><div class="label">Design Canvas</div></div>
+      <div class="cs-hero-grid">
+        <div class="cs-hero-left">
+          <p class="cs-label">Personal Project</p>
+          <div class="cs-logo" style="margin-top:8px;"><img src="../img/projects/nextroute-light.svg" alt="Next Route" style="max-width:420px;" /></div>
+          <p class="cs-tagline" style="max-width:560px;">A third-party trail navigation app that lives inside Toyota's Audio Multimedia system — and reads as part of it.</p>
+          <div class="cs-pills">
+            <span>Product Design</span>
+            <span>UX / UI</span>
+            <span>Automotive HMI</span>
+            <span>Motion Design</span>
+            <span>Prototype</span>
+          </div>
+          <div class="cs-metrics">
+            <div class="cs-metric"><div class="value">3s</div><div class="label">Reduced Screen Time</div></div>
+            <div class="cs-metric"><div class="value">5 &rarr; 2</div><div class="label">Handoff Steps</div></div>
+            <div class="cs-metric"><div class="value">100%</div><div class="label">Task Success</div></div>
+          </div>
+        </div>
+
+        <aside class="cs-summary reveal">
+          <div class="cs-summary-label"><span class="status-dot"></span>Executive Summary</div>
+          <div class="cs-summary-item"><span class="num">01</span><p>Cuts the manual handoff from driving to hiking from 5 steps down to 2</p></div>
+          <div class="cs-summary-item"><span class="num">02</span><p>One seamless experience from driving to parked to trailhead</p></div>
+          <div class="cs-summary-item"><span class="num">03</span><p>100% task success completing the parked-state flow in usability testing</p></div>
+          <hr />
+          <div class="cs-summary-foot">
+            <b>The distinctiveness is in what it does at the trailhead</b>
+            <span>Built within the Tacoma's 14&Prime; display, 12.3&Prime; cluster, and physical knobs</span>
+          </div>
+        </aside>
       </div>
     </div>
   </header>
@@ -59,8 +76,8 @@
   <section class="cs-section" style="padding-top:24px;">
     <div class="wrap">
       <p class="cs-label">Live Prototype</p>
-      <h2 class="cs-heading reveal" style="font-size:clamp(28px,4vw,48px);">Try it in the dash</h2>
-      <p class="cs-subhead">Built for the Toyota Tacoma Trailhead's 14-inch display. This is the real, working prototype — go ahead and interact with it.</p>
+      <h2 class="cs-heading reveal" style="font-size:clamp(28px,4vw,48px);">Watch the handoff happen</h2>
+      <p class="cs-subhead">Built for the Toyota Tacoma Trailhead's 14-inch display. This is the real, working prototype — scrub the distance-to-trailhead slider and watch it switch from Drive to Park on its own.</p>
     </div>
 
     <div class="wrap" style="margin-top:40px;">
@@ -78,14 +95,156 @@
     </div>
   </section>
 
-  <!-- OVERVIEW -->
+  <!-- PROBLEM — THREE LEGS -->
   <section class="cs-section" style="padding-top:0;">
     <div class="wrap">
-      <p class="cs-label">Overview</p>
-      <h2 class="cs-heading reveal" style="font-size:clamp(24px,3vw,36px);">Designed to belong</h2>
-      <div style="max-width:780px;">
-        <p class="cs-subhead" style="max-width:none;">Next Route is a third-party trail navigation app that <em>lives inside</em> Toyota's Audio Multimedia system — and reads as part of it. The Tacoma's 14" display, 12.3" digital cluster, and physical knobs are the hardware constraints we design within, and the host system's visual language is one of them.</p>
-        <p class="cs-subhead" style="max-width:none;">Next Route earns its place by behaving like it belongs there, not by announcing itself. The distinctiveness is in what it <em>does</em> at the trailhead.</p>
+      <p class="cs-label">The Problem</p>
+      <h2 class="cs-heading reveal">Three legs. Three apps. No handoff.</h2>
+      <p class="cs-subhead" style="max-width:720px;">Getting from your driveway to the trail is really three journeys — Driving, Parked, and Trailhead. Each leg already has a great tool. The trouble is that none of them hands you to the next one. The friction doesn't live inside any single app. It lives in the seams between them.</p>
+
+      <div class="stat-grid stat-grid--3">
+        <div class="stat-card reveal">
+          <span class="eyebrow">Leg 01 &middot; Driving</span>
+          <div class="label label--accent">Google Maps, Apple Maps, Waze</div>
+          <div class="detail">World-class turn-by-turn — right up until "You have arrived." They route you to a pin in a parking lot, then go quiet. They never knew a hike was the whole point of the drive.</div>
+        </div>
+        <div class="stat-card reveal">
+          <span class="eyebrow">Leg 02 &middot; Parked</span>
+          <div class="label label--accent">No one owns this moment</div>
+          <div class="detail">The dead zone. You close nav, pick up your phone, and rebuild your context by hand — often with no signal. This is where the screen time and the second-guessing pile up.</div>
+        </div>
+        <div class="stat-card reveal">
+          <span class="eyebrow">Leg 03 &middot; Trailhead</span>
+          <div class="label label--accent">AllTrails, Gaia GPS, onX Backcountry</div>
+          <div class="detail">Deep, trustworthy trail data — but you set it up standing in the lot with your phone out, and it never knew how you got there or how much daylight you have left.</div>
+        </div>
+      </div>
+
+      <blockquote class="cs-callout reveal">
+        Every leg is solved. The <em>transitions</em> are not. Next Route is designed for the two handoffs nobody owns — driving&nbsp;&rarr;&nbsp;parked, and parked&nbsp;&rarr;&nbsp;trailhead.
+      </blockquote>
+    </div>
+  </section>
+
+  <!-- DESIGN CHALLENGE -->
+  <section class="cs-section" style="padding-top:0;">
+    <div class="wrap">
+      <div class="cs-impact-bar reveal">
+        <div class="label">Design Challenge</div>
+        <p class="em">How might we make the move from driving to the trail feel like one continuous experience — so the driver never has to manage the handoff themselves?</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- THE ONE MOMENT — MOTION -->
+  <section class="cs-section" style="padding-top:0;">
+    <div class="wrap">
+      <p class="cs-label">The Solution &middot; Motion</p>
+      <h2 class="cs-heading reveal">The one moment: 2 miles out, it switches itself</h2>
+      <p class="cs-subhead" style="max-width:720px;">Next Route watches your distance to the trailhead. At <b style="color:var(--accent);">2 miles out</b>, it fires a single, automatic transition. The driving layer — map, turn, telemetry — recedes. The parked layer surfaces in its place: trail summary, daylight remaining, elevation, and the actions you'll actually want. No tap, no app-switch. By the time you pull into the lot, the screen is already showing what you need at the trailhead — so your eyes go back up and your phone stays in your pocket.</p>
+
+      <div class="mo-timeline reveal">
+        <div class="mo-row">
+          <div class="mo-name">Driving &middot; Recede</div>
+          <div class="mo-track">
+            <div class="mo-bar mo-bar--muted" style="left:0%;width:31.7%;">map, turn, telemetry &middot; 380ms</div>
+          </div>
+        </div>
+        <div class="mo-row">
+          <div class="mo-name">Parked &middot; Surface</div>
+          <div class="mo-track">
+            <div class="mo-bar mo-bar--accent" style="left:21.7%;width:31.7%;">layer in &middot; 260&rarr;640ms</div>
+          </div>
+        </div>
+        <div class="mo-row">
+          <div class="mo-name">Tier 1 &middot; Bloom</div>
+          <div class="mo-track">
+            <div class="mo-bar mo-bar--accent" style="left:25%;width:51.7%;">zero-tap data &middot; 300&rarr;920ms</div>
+          </div>
+        </div>
+        <div class="mo-row">
+          <div class="mo-name">Tier 2 &middot; Bloom</div>
+          <div class="mo-track">
+            <div class="mo-bar mo-bar--accent" style="left:30.8%;width:51.7%;">supporting &middot; 370&rarr;990ms</div>
+          </div>
+        </div>
+        <div class="mo-row">
+          <div class="mo-name">Tier 3 &middot; Bloom</div>
+          <div class="mo-track">
+            <div class="mo-bar mo-bar--accent" style="left:36.7%;width:51.7%;">actions &middot; 440&rarr;1060ms</div>
+          </div>
+        </div>
+      </div>
+      <div class="mo-axis"><span>0</span><span>300ms</span><span>600ms</span><span>900ms</span><span>1200ms</span></div>
+
+      <p class="cs-subhead" style="max-width:820px;margin-top:32px;">Driving accelerates out (<code>cubic-bezier(0.4, 0, 1, 1)</code>) because it is finished. Parked decelerates in (<code>cubic-bezier(0.16, 1, 0.3, 1)</code>) because you are about to read it standing still. The stagger order is the content architecture, not decoration — tier 1 is what you read with zero taps, tier 3 is what you might deliberately touch. <b>Nothing else in this product animates.</b> One state machine, one meaningful motion moment.</p>
+    </div>
+  </section>
+
+  <!-- STEPS REDUCED -->
+  <section class="cs-section" style="padding-top:0;">
+    <div class="wrap">
+      <p class="cs-label">The Payoff &middot; Steps</p>
+      <h2 class="cs-heading reveal">From five manual steps to two</h2>
+      <p class="cs-subhead">The handoff used to be a checklist you ran yourself in the parking lot. Next Route does the transition for you, so only the human decisions are left.</p>
+
+      <div class="cs-detail-grid" style="margin-top:40px;">
+        <div class="cs-list-card reveal">
+          <div class="head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 10v5"/><path d="M12 18v.5"/></svg>
+            The manual handoff &middot; 5 steps
+          </div>
+          <ul>
+            <li><span class="num">01</span><span>Close turn-by-turn navigation once you've "arrived"</span></li>
+            <li><span class="num">02</span><span>Pick up your phone and unlock it</span></li>
+            <li><span class="num">03</span><span>Open a hiking app and search for the trail again</span></li>
+            <li><span class="num">04</span><span>Check conditions and download the offline map — before you lose signal</span></li>
+            <li><span class="num">05</span><span>Text someone your plan and note a return time</span></li>
+          </ul>
+        </div>
+
+        <div class="cs-list-card reveal">
+          <div class="head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.7.6 1.5 1.5 1.5 2.1h4c0-.6.8-1.5 1.5-2.1A6 6 0 0 0 12 3Z"/></svg>
+            With Next Route &middot; 2 steps
+          </div>
+          <ul>
+            <li><span class="num">01</span><span>Drive. At 2 miles out, nav recedes and the trailhead surfaces on its own — offline map already cached</span></li>
+            <li><span class="num">02</span><span>Park. It's all there — one tap to Send to watch, Share plan, or Set return time</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOR THE TRAILHEAD -->
+  <section class="cs-section" style="padding-top:0;">
+    <div class="wrap">
+      <p class="cs-label">For the Trailhead</p>
+      <h2 class="cs-heading reveal">What this gives the person heading out</h2>
+      <p class="cs-subhead" style="max-width:720px;">"Trailheads" are the people who use this — the ones going from the driver's seat to the dirt. Reducing steps isn't the point; it's what those steps were costing them.</p>
+
+      <div class="stat-grid">
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div class="label label--accent">Eyes up in the lot</div>
+          <div class="detail">You arrive already oriented. No fumbling for your phone, no re-searching the trail — the transition already happened while you were still driving.</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3Z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg></div>
+          <div class="label label--accent">A plan you didn't assemble</div>
+          <div class="detail">Daylight remaining, turnaround time, elevation, and an offline map cached before you lost service — waiting for you instead of built by you.</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0-6 6c0 4 6 12 6 12s6-8 6-12a6 6 0 0 0-6-6Z"/><path d="m9.5 9 1.8 1.8L15 7"/></svg></div>
+          <div class="label label--accent">Safety by default</div>
+          <div class="detail">Return time set, plan shared, watch synced — the steps people skip when it's manual now happen as part of parking. Being off the trail before dark stops being a maybe.</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 17h5l2-11 3 15 2-7h4"/></svg></div>
+          <div class="label label--accent">The car hands you to the trail</div>
+          <div class="detail">Drive, park, and walk feel like one continuous experience instead of three disconnected apps. The product earns its place by disappearing at exactly the right moment.</div>
+        </div>
       </div>
     </div>
   </section>
@@ -95,7 +254,7 @@
     <div class="wrap">
       <p class="cs-label">Roadmap</p>
       <h2 class="cs-heading reveal" style="font-size:clamp(24px,3vw,36px);">What's next — V1.1</h2>
-      <p class="cs-subhead">V1 is the in-dash experience you see above. V1.1 follows quickly, extending Next Route off the dashboard and onto the trail.</p>
+      <p class="cs-subhead">V1 is the in-dash experience above. V1.1 follows quickly, extending Next Route off the dashboard and onto the trail.</p>
 
       <div class="cs-detail-grid" style="margin-top:40px;">
         <div class="stat-card reveal">
