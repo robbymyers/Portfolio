@@ -776,3 +776,17 @@ body.case-study {
   .mo-bar { font-size: 9px; padding: 0 6px; }
   .mo-axis { padding-left: 104px; }
 }
+
+/* ---------- Branding gallery — masonry (mixed aspect ratios) ---------- */
+.brand-gallery { columns: 3; column-gap: 16px; margin-top: 8px; }
+@media (max-width: 900px) { .brand-gallery { columns: 2; } }
+@media (max-width: 560px) { .brand-gallery { columns: 1; } }
+.brand-gallery .frame {
+  break-inside: avoid;
+  margin: 0 0 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid rgba(243, 245, 244, 0.08);
+}
+.brand-gallery .frame img { width: 100%; height: auto; display: block; }
