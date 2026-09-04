@@ -70,6 +70,37 @@ if (nrScale) {
   if (nrFrame) nrFrame.addEventListener('load', fitDash);
 }
 
+// Image lightbox — click a case-study image to view it full size
+(() => {
+  const imgs = document.querySelectorAll('.cs-image .frame img');
+  if (!imgs.length) return;
+  const box = document.createElement('div');
+  box.className = 'lightbox';
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-modal', 'true');
+  box.innerHTML = '<button class="lightbox-close" aria-label="Close image">&times;</button><img alt="" />';
+  const full = box.querySelector('img');
+  const closeBtn = box.querySelector('.lightbox-close');
+  document.body.appendChild(box);
+  const open = (src, alt) => {
+    full.src = src;
+    full.alt = alt || '';
+    box.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  const close = () => {
+    box.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  imgs.forEach((img) => {
+    img.addEventListener('click', () => open(img.currentSrc || img.src, img.alt));
+  });
+  box.addEventListener('click', (e) => { if (e.target === box || e.target === closeBtn) close(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && box.classList.contains('open')) close();
+  });
+})();
+
 // Scroll-enter reveal (fade-in / slide-up)
 const revealEls = document.querySelectorAll('.reveal');
 if ('IntersectionObserver' in window && revealEls.length) {
