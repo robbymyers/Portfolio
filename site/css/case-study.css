@@ -124,6 +124,10 @@ body.case-study {
 }
 .cs-image img { width: 100%; height: auto; }
 .cs-image .placeholder { aspect-ratio: 16 / 9; }
+.cs-image .frame video,
+.cs-image-pair .frame video,
+.cs-image-trio .frame video,
+.brand-gallery .frame video { width: 100%; height: auto; display: block; }
 
 /* ---------- Design Challenge callout ---------- */
 .cs-callout {
