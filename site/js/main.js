@@ -113,9 +113,14 @@ if ('IntersectionObserver' in window && revealEls.length) {
         }
       });
     },
-    { threshold: 0.15 }
+    // threshold 0 so zero-height frames (e.g. an image that hasn't loaded yet)
+    // still satisfy the observer; rootMargin reveals slightly before entry.
+    { threshold: 0, rootMargin: '0px 0px 10% 0px' }
   );
   revealEls.forEach((el) => observer.observe(el));
+  // Safety net: never leave content stuck invisible if the observer fails to
+  // fire (some engines/edge cases don't report zero-area or offscreen targets).
+  setTimeout(() => revealEls.forEach((el) => el.classList.add('in-view')), 1500);
 } else {
   revealEls.forEach((el) => el.classList.add('in-view'));
 }
