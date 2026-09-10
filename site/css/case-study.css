@@ -129,6 +129,37 @@ body.case-study {
 .cs-image-trio .frame video,
 .brand-gallery .frame video { width: 100%; height: auto; display: block; }
 
+/* ---------- Video preview grid (native <video>, no autoplay) ---------- */
+.vid-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.vid-card .frame {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+}
+.vid-card video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;   /* reserve height before load — no zero-height frame */
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+.vid-card .vid-cap {
+  margin-top: 12px;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+@media (max-width: 700px) {
+  .vid-grid { grid-template-columns: 1fr; gap: 24px; }
+}
+
 /* ---------- Design Challenge callout ---------- */
 .cs-callout {
   border-left: 3px solid var(--accent);
