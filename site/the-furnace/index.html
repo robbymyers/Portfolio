@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Furnace — Case Study · Robby Myers</title>
+  <meta name="description" content="The Furnace — an internal command center for Shadrachs Coffee: projects, social calendar, and approvals in one shared, always-current source of truth. Designed and built end to end by Robby Myers." />
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="../css/case-study.css" />
+</head>
+<body class="case-study" style="--accent:#BE494D; --accent-2:#B2292E;">
+
+  <!-- NAV (dark variant) -->
+  <nav class="nav nav--dark" id="nav">
+    <a href="../index.html" class="nav-logo" aria-label="Robby Myers home">
+      <img src="../img/R-Logo-Red.svg" alt="R monogram" />
+      <span class="nav-wordmark">Robby Myers</span>
+    </a>
+    <div class="nav-links">
+      <a href="../about/index.html">About</a>
+      <a href="../featured/index.html">Featured</a>
+      <a href="../all-work/index.html">All Work</a>
+      <a href="../index.html#contact">Contact</a>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="../about/index.html">About</a>
+    <a href="../featured/index.html">Featured</a>
+    <a href="../all-work/index.html">All Work</a>
+    <a href="../index.html#contact">Contact</a>
+  </div>
+
+  <!-- SECTION 1 — CASE STUDY HERO -->
+  <header class="cs-hero">
+    <div class="wrap">
+      <div class="cs-hero-grid">
+        <div class="cs-hero-left">
+          <p class="cs-label">Internal Tool · Shadrachs Coffee</p>
+          <h1 class="cs-heading reveal" style="font-size:clamp(48px,8vw,104px);text-transform:uppercase;margin-top:8px;">The Furnace</h1>
+          <p class="cs-tagline" style="max-width:540px;">An internal command center for Shadrachs Coffee — one shared, always-current source of truth for projects, social, and approvals.</p>
+          <div class="cs-pills">
+            <span>Product Design</span>
+            <span>UX/UI &amp; Design System</span>
+            <span>Full-Stack Build</span>
+            <span>Next.js + Supabase</span>
+          </div>
+          <div class="cs-metrics">
+            <div class="cs-metric"><div class="value">3 &rarr; 1</div><div class="label">Tools Consolidated</div></div>
+            <div class="cs-metric"><div class="value">~5,150</div><div class="label">Lines Shipped</div></div>
+            <div class="cs-metric"><div class="value">v1 Live</div><div class="label">In Daily Use</div></div>
+          </div>
+        </div>
+
+        <aside class="cs-summary reveal">
+          <div class="cs-summary-label"><span class="status-dot"></span>Executive Summary</div>
+          <div class="cs-summary-item"><span class="num">01</span><p>Replaced a Monday/Trello trial and a running Google Doc with one source of truth</p></div>
+          <div class="cs-summary-item"><span class="num">02</span><p>Five modules — Projects, Social Calendar, Approvals, Dashboard, Archive</p></div>
+          <div class="cs-summary-item"><span class="num">03</span><p>Optimistic, RLS-secured writes; light/dark; responsive to a mobile tab bar</p></div>
+          <hr />
+          <div class="cs-summary-foot">
+            <b>Shipped and in real use</b>
+            <span>Built solo, end to end — design through database</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION 2 — HERO IMAGE -->
+  <section class="cs-image">
+    <div class="wrap">
+      <div class="frame reveal"><img src="img/Furnace-Desktop-01.jpg" alt="The Furnace — Projects board" /></div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 — PROBLEM / SOLUTION -->
+  <section class="cs-section">
+    <div class="wrap">
+      <p class="cs-label">Problem — Solution</p>
+      <h2 class="cs-heading reveal">From Scattered Tools to One Source of Truth</h2>
+      <p class="cs-subhead">How a marketing team's trial-and-error across three tools became one always-current place to run the work.</p>
+
+      <blockquote class="cs-callout reveal">
+        "How might we give a small marketing team one always-current place to run projects, plan social, and clear approvals — without the overhead of a heavyweight project-management tool?"
+      </blockquote>
+
+      <div class="fs-row reveal">
+        <div class="fs-card fs-card--friction">
+          <span class="tag">Friction</span>
+          <b>No Source of Truth</b>
+          A Monday and Trello trial-and-error period, plus a running Google Doc of marketing tasks. Nothing was current, and nothing was authoritative.
+        </div>
+        <span class="fs-arrow">&rarr;</span>
+        <div class="fs-card fs-card--solution">
+          <span class="tag">Solution</span>
+          One color-coded Projects board — always current — with inline subtask checklists, pinning, and free-text search across titles, descriptions, and subtasks.
+        </div>
+      </div>
+
+      <div class="fs-row reveal">
+        <div class="fs-card fs-card--friction">
+          <span class="tag">Friction</span>
+          <b>Status as Highlight Color</b>
+          The source Doc encoded status as a background highlight per line — and the highlights drifted off their text, so per-item status came out wrong.
+        </div>
+        <span class="fs-arrow">&rarr;</span>
+        <div class="fs-card fs-card--solution">
+          <span class="tag">Solution</span>
+          A fixed status mapping with an explicit "unassigned" state — everything seeded neutral and triaged by hand in the app instead of guessed.
+        </div>
+      </div>
+
+      <div class="fs-row reveal">
+        <div class="fs-card fs-card--friction">
+          <span class="tag">Friction</span>
+          <b>Approvals in the Margins</b>
+          Creative sign-off happened over scattered messages, with no record of who approved what, or when.
+        </div>
+        <span class="fs-arrow">&rarr;</span>
+        <div class="fs-card fs-card--solution">
+          <span class="tag">Solution</span>
+          A dedicated Approvals surface — drag-and-drop upload, approve or request changes, with reviewer notes, attribution, and timestamps saved alongside the decision.
+        </div>
+      </div>
+
+      <div class="fs-row reveal">
+        <div class="fs-card fs-card--friction">
+          <span class="tag">Friction</span>
+          <b>Nothing Watching the Dates</b>
+          No shared view of what was due or waiting — deadlines lived in someone's head or a stale document.
+        </div>
+        <span class="fs-arrow">&rarr;</span>
+        <div class="fs-card fs-card--solution">
+          <span class="tag">Solution</span>
+          A dashboard that doubles as the notification layer — due in 2 days, pending approvals, posts this week, and a recent-activity feed.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4 — SCREENS -->
+  <section class="cs-image">
+    <div class="wrap">
+      <div class="cs-image-pair">
+        <div class="frame reveal"><img src="img/Furnace-Desktop-02.jpg" alt="The Furnace — project detail slide-over" /></div>
+        <div class="frame reveal"><img src="img/Furnace-Desktop-03.jpg" alt="The Furnace — social calendar" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 — BUILD & ARCHITECTURE -->
+  <section class="cs-section">
+    <div class="wrap">
+      <p class="cs-label">Build &amp; Architecture</p>
+      <h2 class="cs-heading reveal">Designed and Built, End to End</h2>
+
+      <div class="stat-grid">
+        <div class="stat-card reveal">
+          <div class="value">5</div>
+          <div class="label">Tables, All RLS-Secured</div>
+          <div class="detail">19 policies on public, 4 on the storage bucket</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="value">40</div>
+          <div class="label">Source Files</div>
+          <div class="detail">~5,150 lines of TypeScript, TSX, and CSS</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="value">8</div>
+          <div class="label">Migrations, In Order</div>
+          <div class="detail">Core schema &rarr; RLS &rarr; storage &rarr; pinning &rarr; archiving</div>
+        </div>
+        <div class="stat-card reveal">
+          <div class="value">13 / 9</div>
+          <div class="label">Active / Archived Projects</div>
+          <div class="detail">26 subtasks across 3 people, seeded from real data</div>
+        </div>
+      </div>
+
+      <div class="cs-detail-grid">
+        <div class="cs-detail reveal">
+          <h3>Architecture</h3>
+          <p>Server components fetch initial data; interaction and writes happen client-side against Supabase, with RLS enforcing access. Writes are optimistic and revert on failure, so the UI never waits on a round trip for a checkbox.</p>
+          <div class="ia-grid">
+            <div class="ia-cell"><b>Framework</b><span>Next.js 16 · App Router</span></div>
+            <div class="ia-cell"><b>Backend</b><span>Supabase · Postgres 17</span></div>
+            <div class="ia-cell"><b>Writes</b><span>Optimistic, revert on fail</span></div>
+            <div class="ia-cell"><b>Security</b><span>RLS on every table</span></div>
+          </div>
+        </div>
+        <div class="cs-detail reveal">
+          <h3>The Five Modules</h3>
+          <p>Each replaces something the team was doing by hand.</p>
+          <ul class="feature-list">
+            <li><span class="num">01</span><span class="leader"></span><span class="label">Projects — board, subtasks, search</span></li>
+            <li><span class="num">02</span><span class="leader"></span><span class="label">Social Calendar — month grid, drafts</span></li>
+            <li><span class="num">03</span><span class="leader"></span><span class="label">Approvals — upload, review, attribute</span></li>
+            <li><span class="num">04</span><span class="leader"></span><span class="label">Dashboard — due-soon &amp; activity</span></li>
+            <li><span class="num">05</span><span class="leader"></span><span class="label">Archive — restore or delete</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 — MORE SCREENS -->
+  <section class="cs-image">
+    <div class="wrap">
+      <div class="cs-image-pair">
+        <div class="frame reveal"><img src="img/Furnace-Desktop-04.jpg" alt="The Furnace — approvals" /></div>
+        <div class="frame reveal"><img src="img/Furnace-Desktop-05.jpg" alt="The Furnace — dashboard" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 7 — DESIGN SYSTEM -->
+  <section class="cs-section">
+    <div class="wrap">
+      <p class="cs-label">Design System</p>
+      <h2 class="cs-heading reveal">Semantic Tokens, Not Raw Hex</h2>
+      <p class="cs-subhead">Light and dark are two token sets in one file — no component knows which mode it is in. Status colors are a fixed, non-editable mapping.</p>
+
+      <div class="ds-pills reveal">
+        <span>Unassigned</span><span>Waiting on Caroline</span><span>Needs Attention</span><span>Completed</span><span>Ordered</span>
+      </div>
+
+      <div class="palette reveal">
+        <div class="swatch"><div class="chip" style="background:#171717;"></div><b>Ink</b><span>#171717</span></div>
+        <div class="swatch"><div class="chip" style="background:#F2F2F2;"></div><b>Surface</b><span>#F2F2F2</span></div>
+        <div class="swatch"><div class="chip" style="background:#B2292E;"></div><b>Accent · Light</b><span>#B2292E</span></div>
+        <div class="swatch"><div class="chip" style="background:#BE494D;"></div><b>Accent · Dark</b><span>#BE494D</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 8 — MOBILE -->
+  <section class="cs-image">
+    <div class="wrap">
+      <div class="cs-image-pair">
+        <div class="frame reveal"><img src="img/Furnace-Mobile-01.jpg" alt="The Furnace — mobile projects view" /></div>
+        <div class="frame reveal"><img src="img/Furnace-Mobile-02.jpg" alt="The Furnace — mobile detail view" /></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 9 — PROBLEMS FOUND & FIXED -->
+  <section class="cs-section">
+    <div class="wrap">
+      <p class="cs-label">Under the Hood</p>
+      <h2 class="cs-heading reveal">Problems Found &amp; Fixed</h2>
+      <p class="cs-subhead">The parts that were not just typing.</p>
+
+      <div class="cs-detail-grid">
+        <div class="cs-detail reveal">
+          <h3>Unlayered CSS defeating Tailwind</h3>
+          <p>Red buttons rendered with black text in light mode. Base resets sat unlayered in <code>globals.css</code> — and unlayered CSS outranks any cascade layer — so <code>button { color: inherit }</code> beat <code>text-accent-fg</code>. Fixed by moving the resets into <code>@layer base</code>.</p>
+        </div>
+        <div class="cs-detail reveal">
+          <h3>Two exposed RPC endpoints</h3>
+          <p>PostgREST exposes anything in the <code>public</code> schema as a callable endpoint — including two <code>SECURITY DEFINER</code> trigger functions. Execute was revoked from <code>anon</code> and <code>authenticated</code>; Supabase advisors returned clean.</p>
+        </div>
+        <div class="cs-detail reveal">
+          <h3>A stateful-regex link bug</h3>
+          <p><code>.test()</code> on a <code>/g</code> regex advances <code>lastIndex</code> between calls, so auto-linking pasted URLs worked only every other time. Replaced with index parity from the split.</p>
+        </div>
+        <div class="cs-detail reveal">
+          <h3>Timezone-safe dates</h3>
+          <p><code>date</code> columns return <code>YYYY-MM-DD</code>; parsing those with <code>new Date(str)</code> treats them as UTC midnight and shifts the day backward west of Greenwich. All conversions go through local-time constructors.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 10 — DECISIONS -->
+  <section class="cs-section">
+    <div class="wrap">
+      <p class="cs-label">Decisions Worth Defending</p>
+      <h2 class="cs-heading reveal">Small Calls, Real Reasons</h2>
+
+      <div class="cs-detail-grid">
+        <div class="cs-detail reveal">
+          <h3>Archiving is a timestamp, not a status</h3>
+          <p>Putting "Archived" in the status dropdown would make it mutually exclusive with "Completed" and lose the record of how a project ended. <code>archived_at</code> is orthogonal — the project keeps its status and just leaves the board.</p>
+        </div>
+        <div class="cs-detail reveal">
+          <h3>Pinning is a timestamp, not a boolean</h3>
+          <p>Same reasoning — "when was this raised?" stays answerable, and ordering the pinned group by recency comes for free, without another migration.</p>
+        </div>
+        <div class="cs-detail reveal">
+          <h3>Pinned rows don't get the urgency color</h3>
+          <p>Position plus a red pin already signal importance. A red wash on top would make pinned rows indistinguishable from genuinely due-soon ones — and cost the signal that matters.</p>
+        </div>
+        <div class="cs-detail reveal">
+          <h3>"Request changes" is not a red button</h3>
+          <p>It is a review decision, not a destructive action, and shouldn't compete with Approve for the eye.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 11 — COMPLETED DELIVERABLES -->
+  <section class="cs-section">
+    <div class="wrap">
+      <p class="cs-label">v1 Shipped</p>
+      <h2 class="cs-heading reveal">In the Box</h2>
+      <ul class="deliverables reveal">
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Projects board — subtasks, search, pin, archive</span></li>
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Social Calendar — month grid, draft / scheduled / posted</span></li>
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Approvals — upload, review workflow, attribution</span></li>
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Dashboard — due-soon, pending, activity feed</span></li>
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Design system — light / dark semantic tokens</span></li>
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Invite-only email / password auth</span></li>
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Supabase schema — RLS on every table, private storage</span></li>
+        <li><span class="check">&#10003;</span><span class="leader"></span><span>Responsive — desktop sidebar to a mobile tab bar</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- CONTACT / FOOTER -->
+  <footer class="contact" id="contact">
+    <div class="wrap">
+      <p class="contact-pre">Let's Build Something Worthwhile</p>
+      <a class="contact-cta" href="mailto:robby.myers@gmail.com">Get In<br />Touch<span class="arrow">&nearr;</span></a>
+      <hr class="rule" />
+      <div class="contact-row">
+        <div class="contact-links">
+          <a href="mailto:robby.myers@gmail.com">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            robby.myers@gmail.com
+          </a>
+          <a href="https://linkedin.com/in/robbymyers" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0ZM.25 8.25h4.5V24h-4.5V8.25Zm7.5 0h4.31v2.15h.06c.6-1.13 2.07-2.32 4.26-2.32 4.56 0 5.4 3 5.4 6.9V24h-4.5v-7.12c0-1.7-.03-3.88-2.36-3.88-2.36 0-2.72 1.85-2.72 3.76V24h-4.5V8.25Z"/></svg>
+            Robby Myers
+          </a>
+        </div>
+        <p class="contact-quote">"Love, not too well, the work of thy hands."</p>
+      </div>
+      <hr class="rule" />
+      <div class="footer-bar">
+        <span>&copy; 2026 Robby Myers</span>
+        <span>Arkansas</span>
+        <span>Designed and Built With Intent</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+  <!-- Vercel Web Analytics -->
+  <script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
