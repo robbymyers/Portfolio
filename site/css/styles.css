@@ -590,6 +590,7 @@ ul { list-style: none; }
   .cw-mockup--shads   { width: 240px; right: 28px; top: 20px; }
   .cw-mockup--famcal  { width: 330px; right: -56px; top: 50%; transform: translateY(-50%); }
   .cw-mockup--fitness { width: 250px; right: 32px; top: 24px; }
+  .cw-mockup--furnace { width: 240px; right: 32px; top: 24px; }
 }
 
 /* ============================================================
