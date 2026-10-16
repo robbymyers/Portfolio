@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Dashboard · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, esc, money, fmtDate, todayISO, parseDate, invoiceBadge, quoteBadge } from './app.js';
+
+    mountApp({ active: 'dashboard', render: async (main) => {
+      const today = todayISO();
+      const [{ data: invoices }, { data: invTotals }, { data: quotes }, { data: engagements }, { data: clients }] = await Promise.all([
+        table('invoices').select('id,number,client_id,status,due_date,paid_date,sentry_logged').in('status', ['sent', 'paid']),
+        table('invoice_totals').select('*'),
+        table('quotes').select('id,number,client_id,issue_date,valid_until,status').eq('status', 'sent'),
+        table('engagements').select('*').eq('is_retainer', true).eq('status', 'active'),
+        table('clients').select('id,name,business_name'),
+      ]);
+      const totalOf = Object.fromEntries((invTotals || []).map((t) => [t.invoice_id, Number(t.total)]));
+      const nameOf = Object.fromEntries((clients || []).map((c) => [c.id, c.business_name || c.name]));
+
+      const outstanding = (invoices || []).filter((i) => i.status === 'sent');
+      const outstandingTotal = outstanding.reduce((s, i) => s + (totalOf[i.id] || 0), 0);
+      const overdue = outstanding.filter((i) => i.due_date && parseDate(i.due_date) < parseDate(today));
+      const paidNotLogged = (invoices || []).filter((i) => i.status === 'paid' && !i.sentry_logged);
+
+      function nextBill(day) {
+        const now = new Date(); const d = Math.min(Number(day) || 1, 28);
+        let next = new Date(now.getFullYear(), now.getMonth(), d);
+        if (next < new Date(now.getFullYear(), now.getMonth(), now.getDate())) next = new Date(now.getFullYear(), now.getMonth() + 1, d);
+        return next;
+      }
+      const retainers = (engagements || []).map((e) => ({ ...e, next: nextBill(e.retainer_billing_day) })).sort((a, b) => a.next - b.next);
+
+      const invRow = (i) => `<tr class="fc-rowlink" onclick="location.href='invoice.html?id=${i.id}'">
+        <td><b>${esc(i.number) || 'Draft'}</b></td><td>${esc(nameOf[i.client_id])}</td>
+        <td class="num">${money(totalOf[i.id] || 0)}</td><td>${fmtDate(i.due_date)}</td><td>${invoiceBadge(i)}</td></tr>`;
+
+      main.innerHTML = `
+        <div class="fc-page-head">
+          <h1>Dashboard</h1>
+          <div class="fc-spacer"></div>
+          <a class="fc-btn fc-btn--ghost" href="clients.html">+ Client</a>
+          <a class="fc-btn fc-btn--ghost" href="quote.html">+ Quote</a>
+          <a class="fc-btn fc-btn--ghost" href="invoice.html">+ Invoice</a>
+          <a class="fc-btn fc-btn--primary" href="calendar.html">+ Calendar</a>
+        </div>
+
+        <div class="fc-grid fc-grid--3">
+          <div class="fc-card"><h2>Outstanding</h2><div class="fc-stat">${money(outstandingTotal)}</div><div class="fc-stat-sub">${outstanding.length} invoice${outstanding.length === 1 ? '' : 's'} awaiting payment</div></div>
+          <div class="fc-card"><h2>Overdue</h2><div class="fc-stat">${overdue.length}</div><div class="fc-stat-sub">${money(overdue.reduce((s, i) => s + (totalOf[i.id] || 0), 0))} past due</div></div>
+          <div class="fc-card"><h2>Quotes out</h2><div class="fc-stat">${(quotes || []).length}</div><div class="fc-stat-sub">awaiting a response</div></div>
+        </div>
+
+        ${paidNotLogged.length ? `<div class="fc-section"><div class="fc-list-head"><h2>Log in Sentry</h2></div>
+          <div class="fc-card" style="padding:0"><table class="fc-table"><thead><tr><th>Invoice</th><th>Client</th><th class="num">Amount</th><th>Paid</th><th></th></tr></thead><tbody>
+          ${paidNotLogged.map((i) => `<tr class="fc-rowlink" onclick="location.href='invoice.html?id=${i.id}'"><td><b>${esc(i.number)}</b></td><td>${esc(nameOf[i.client_id])}</td><td class="num">${money(totalOf[i.id] || 0)}</td><td>${fmtDate(i.paid_date)}</td><td class="fc-muted">not logged &rarr;</td></tr>`).join('')}
+          </tbody></table></div></div>` : ''}
+
+        <div class="fc-section"><div class="fc-list-head"><h2>Overdue</h2></div>
+          ${overdue.length ? `<div class="fc-card" style="padding:0"><table class="fc-table"><thead><tr><th>Invoice</th><th>Client</th><th class="num">Amount</th><th>Due</th><th>Status</th></tr></thead><tbody>${overdue.map(invRow).join('')}</tbody></table></div>` : '<div class="fc-card fc-empty">Nothing overdue.</div>'}
+        </div>
+
+        <div class="fc-section"><div class="fc-list-head"><h2>Awaiting payment</h2></div>
+          ${outstanding.length ? `<div class="fc-card" style="padding:0"><table class="fc-table"><thead><tr><th>Invoice</th><th>Client</th><th class="num">Amount</th><th>Due</th><th>Status</th></tr></thead><tbody>${outstanding.map(invRow).join('')}</tbody></table></div>` : '<div class="fc-card fc-empty">No outstanding invoices.</div>'}
+        </div>
+
+        <div class="fc-section"><div class="fc-list-head"><h2>Quotes awaiting a response</h2></div>
+          ${(quotes || []).length ? `<div class="fc-card" style="padding:0"><table class="fc-table"><thead><tr><th>Quote</th><th>Client</th><th>Valid until</th><th>Status</th></tr></thead><tbody>${quotes.map((q) => `<tr class="fc-rowlink" onclick="location.href='quote.html?id=${q.id}'"><td><b>${esc(q.number)}</b></td><td>${esc(nameOf[q.client_id])}</td><td>${fmtDate(q.valid_until)}</td><td>${quoteBadge(q)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="fc-card fc-empty">No open quotes.</div>'}
+        </div>
+
+        <div class="fc-section"><div class="fc-list-head"><h2>Retainers — next bill</h2></div>
+          ${retainers.length ? `<div class="fc-card" style="padding:0"><table class="fc-table"><thead><tr><th>Engagement</th><th>Client</th><th class="num">Amount</th><th>Next bill</th></tr></thead><tbody>${retainers.map((e) => `<tr class="fc-rowlink" onclick="location.href='client.html?id=${e.client_id}'"><td><b>${esc(e.title) || 'Retainer'}</b></td><td>${esc(nameOf[e.client_id])}</td><td class="num">${money(e.retainer_amount)}</td><td>${fmtDate(e.next)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="fc-card fc-empty">No active retainers.</div>'}
+        </div>`;
+    }});
+  </script>
+</body>
+</html>

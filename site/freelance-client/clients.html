@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Clients · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc, debounce } from './app.js';
+
+    const STATUSES = ['prospect', 'active', 'past'];
+
+    mountApp({ active: 'clients', render: async (main) => {
+      main.innerHTML = `
+        <div class="fc-page-head">
+          <h1>Clients</h1>
+          <div class="fc-spacer"></div>
+          <button class="fc-btn fc-btn--primary" id="new-client">+ New client</button>
+        </div>
+        <input id="search" placeholder="Search name, business, email…" style="max-width:420px;margin-bottom:16px" />
+        <div class="fc-card" style="padding:0">
+          <table class="fc-table"><thead><tr>
+            <th>Name</th><th>Business</th><th>Email</th><th>Status</th>
+          </tr></thead><tbody id="rows"></tbody></table>
+        </div>
+        <dialog id="dlg" class="fc-dialog"></dialog>`;
+
+      const rows = main.querySelector('#rows');
+      async function load(q = '') {
+        let query = table('clients').select('*').order('created_at', { ascending: false });
+        if (q) query = query.or(`name.ilike.%${q}%,business_name.ilike.%${q}%,email.ilike.%${q}%`);
+        const { data, error } = await query;
+        if (error) { rows.innerHTML = `<tr><td colspan="4" class="fc-muted">${esc(error.message)}</td></tr>`; return; }
+        if (!data.length) { rows.innerHTML = `<tr><td colspan="4" class="fc-empty">No clients yet.</td></tr>`; return; }
+        rows.innerHTML = data.map((c) => `
+          <tr class="fc-rowlink" data-id="${c.id}">
+            <td><b>${esc(c.name)}</b></td>
+            <td>${esc(c.business_name)}</td>
+            <td class="fc-muted">${esc(c.email)}</td>
+            <td><span class="fc-badge fc-badge--c-${c.status}">${c.status}</span></td>
+          </tr>`).join('');
+        rows.querySelectorAll('.fc-rowlink').forEach((tr) =>
+          tr.addEventListener('click', () => { location.href = `client.html?id=${tr.dataset.id}`; }));
+      }
+
+      main.querySelector('#search').addEventListener('input', debounce((e) => load(e.target.value.trim()), 250));
+      main.querySelector('#new-client').addEventListener('click', () => openForm());
+
+      function openForm() {
+        const dlg = main.querySelector('#dlg');
+        dlg.innerHTML = `
+          <form method="dialog" class="fc-dialog-body" id="cform">
+            <h2 style="margin-top:0">New client</h2>
+            <div class="fc-row">
+              <label class="fc-field"><span>Name *</span><input name="name" required /></label>
+              <label class="fc-field"><span>Business</span><input name="business_name" /></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Email</span><input name="email" type="email" /></label>
+              <label class="fc-field"><span>Phone</span><input name="phone" /></label>
+            </div>
+            <label class="fc-field"><span>Address</span><input name="address" /></label>
+            <label class="fc-field"><span>Notes</span><textarea name="notes"></textarea></label>
+            <label class="fc-field"><span>Status</span><select name="status">${STATUSES.map((s) => `<option value="${s}">${s}</option>`).join('')}</select></label>
+            <div class="fc-row" style="margin-top:6px">
+              <button class="fc-btn fc-btn--ghost" value="cancel" formnovalidate>Cancel</button>
+              <button class="fc-btn fc-btn--primary" id="save" value="save">Save client</button>
+            </div>
+          </form>`;
+        dlg.showModal();
+        dlg.querySelector('#cform').addEventListener('submit', async (e) => {
+          if (e.submitter && e.submitter.value === 'cancel') return;
+          e.preventDefault();
+          const f = new FormData(e.target);
+          const payload = Object.fromEntries([...f.entries()].map(([k, v]) => [k, v || null]));
+          const { data, error } = await table('clients').insert(payload).select('id').single();
+          if (error) { toast(error.message, 'err'); return; }
+          dlg.close();
+          location.href = `client.html?id=${data.id}`;
+        });
+      }
+
+      await load();
+    }});
+  </script>
+</body>
+</html>

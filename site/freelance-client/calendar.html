@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Calendar · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc, qs, fmtDate, fmtMonth, parseDate, toISO, confirmAction } from './app.js';
+
+    const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    mountApp({ active: 'clients', render: async (main) => {
+      const cid = qs('id');
+      const presetClient = qs('client');
+      const { data: clients } = await table('clients').select('id,name,business_name').order('name');
+
+      let cal, postTypes = [], entries = [], monthFocus = [], notes = [];
+      if (cid) {
+        cal = (await table('calendars').select('*').eq('id', cid).maybeSingle()).data;
+        postTypes = (await table('calendar_post_types').select('*').eq('calendar_id', cid).order('sort_order')).data || [];
+        entries = (await table('calendar_entries').select('*').eq('calendar_id', cid).order('date')).data || [];
+        monthFocus = (await table('calendar_month_focus').select('*').eq('calendar_id', cid)).data || [];
+        notes = (await table('calendar_notes').select('*').eq('calendar_id', cid).order('sort_order')).data || [];
+      } else {
+        const now = new Date();
+        cal = { client_id: presetClient || (clients[0] && clients[0].id), title: '', platform: '', subtitle: '',
+          start_month: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`, month_count: 3, footer_note: '' };
+      }
+
+      // --- month helpers / computed totals
+      const months = () => {
+        const d = parseDate(cal.start_month) || new Date();
+        return Array.from({ length: cal.month_count || 1 }, (_, i) => new Date(d.getFullYear(), d.getMonth() + i, 1));
+      };
+      const postWeekdays = () => [...new Set(postTypes.map((p) => Number(p.weekday)))];
+      function countMonth(m) {
+        const wds = postWeekdays(); if (!wds.length) return 0;
+        const days = new Date(m.getFullYear(), m.getMonth() + 1, 0).getDate(); let n = 0;
+        for (let d = 1; d <= days; d++) if (wds.includes(new Date(m.getFullYear(), m.getMonth(), d).getDay())) n++;
+        return n;
+      }
+      const totalPosts = () => months().reduce((s, m) => s + countMonth(m), 0);
+
+      function render() {
+        main.innerHTML = `
+        <div class="fc-screen">
+          <div class="fc-page-head fc-no-print">
+            <a class="fc-crumb" href="${cal.client_id ? `client.html?id=${cal.client_id}` : 'clients.html'}">&larr; Back</a>
+            <div class="fc-spacer"></div>
+            ${cid ? '<button class="fc-btn" id="dup-btn">Duplicate…</button>' : ''}
+            <button class="fc-btn" id="print-btn">Print / Save PDF</button>
+            <button class="fc-btn fc-btn--primary" id="save-btn">Save</button>
+          </div>
+          <h1 style="font-family:var(--fc-head);text-transform:uppercase;font-size:28px;margin:0 0 16px">Calendar</h1>
+
+          <div class="fc-card">
+            <div class="fc-row">
+              <label class="fc-field"><span>Client</span><select id="f-client">${clients.map((c) => `<option value="${c.id}" ${c.id === cal.client_id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select></label>
+              <label class="fc-field"><span>Title</span><input id="f-title" value="${esc(cal.title)}" /></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Platform</span><input id="f-platform" value="${esc(cal.platform)}" placeholder="Facebook" /></label>
+              <label class="fc-field"><span>Subtitle</span><input id="f-subtitle" value="${esc(cal.subtitle)}" /></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Start month</span><input type="month" id="f-start" value="${(cal.start_month || '').slice(0, 7)}" /></label>
+              <label class="fc-field"><span># of months</span><input type="number" min="1" max="12" id="f-count" value="${esc(cal.month_count)}" /></label>
+              <label class="fc-field"><span>Computed posts</span><input value="${totalPosts()} posts" disabled /></label>
+            </div>
+            <label class="fc-field"><span>Footer note</span><input id="f-footer" value="${esc(cal.footer_note)}" /></label>
+          </div>
+
+          <div class="fc-card" style="margin-top:16px">
+            <h2>Rhythm — one row per posting weekday</h2>
+            <div id="pt-list"></div>
+            <button class="fc-btn fc-btn--sm" id="add-pt" style="margin-top:8px">+ Post type</button>
+          </div>
+
+          <div class="fc-card" style="margin-top:16px">
+            <h2>Dated entries</h2>
+            <div id="entry-list"></div>
+            <button class="fc-btn fc-btn--sm" id="add-entry" style="margin-top:8px">+ Entry</button>
+          </div>
+
+          <div class="fc-card" style="margin-top:16px">
+            <h2>This month's focus</h2>
+            <div id="focus-list"></div>
+          </div>
+
+          <div class="fc-card" style="margin-top:16px">
+            <h2>Overview notes (e.g. Giveaway Idea)</h2>
+            <div id="notes-list"></div>
+            <button class="fc-btn fc-btn--sm" id="add-note" style="margin-top:8px">+ Note box</button>
+          </div>
+        </div>
+        ${printView()}
+        <dialog id="dlg" class="fc-dialog"></dialog>`;
+
+        renderPT(); renderEntries(); renderFocus(); renderNotes(); wire();
+      }
+
+      // ---- editors
+      function renderPT() {
+        const box = main.querySelector('#pt-list');
+        box.innerHTML = postTypes.map((p, i) => `
+          <div class="fc-row" style="align-items:flex-end;margin-bottom:8px">
+            <label class="fc-field" style="max-width:120px"><span>Weekday</span><select data-i="${i}" data-k="weekday">${WD.map((w, wi) => `<option value="${wi}" ${Number(p.weekday) === wi ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
+            <label class="fc-field"><span>Label</span><input data-i="${i}" data-k="label" value="${esc(p.label)}" /></label>
+            <label class="fc-field"><span>Description</span><input data-i="${i}" data-k="description" value="${esc(p.description)}" /></label>
+            <button class="fc-btn fc-btn--sm fc-btn--ghost" data-del-pt="${i}">✕</button>
+          </div>`).join('') || '<p class="fc-muted">No post types yet.</p>';
+        box.querySelectorAll('input,select').forEach((el) => el.addEventListener('input', () => { postTypes[el.dataset.i][el.dataset.k] = el.value; }));
+        box.querySelectorAll('[data-del-pt]').forEach((b) => b.addEventListener('click', () => { postTypes.splice(Number(b.dataset.delPt), 1); renderPT(); }));
+      }
+      function renderEntries() {
+        const box = main.querySelector('#entry-list');
+        box.innerHTML = entries.map((e, i) => `
+          <div class="fc-row" style="align-items:flex-end;margin-bottom:8px">
+            <label class="fc-field" style="max-width:150px"><span>Date</span><input type="date" data-i="${i}" data-k="date" value="${esc(e.date)}" /></label>
+            <label class="fc-field" style="max-width:130px"><span>Kind</span><select data-i="${i}" data-k="kind">${['highlight', 'task', 'override'].map((k) => `<option ${e.kind === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
+            <label class="fc-field"><span>Title</span><input data-i="${i}" data-k="title" value="${esc(e.title)}" /></label>
+            <label class="fc-field"><span>Detail</span><input data-i="${i}" data-k="detail" value="${esc(e.detail)}" /></label>
+            <button class="fc-btn fc-btn--sm fc-btn--ghost" data-del-e="${i}">✕</button>
+          </div>`).join('') || '<p class="fc-muted">No entries yet.</p>';
+        box.querySelectorAll('input,select').forEach((el) => el.addEventListener('input', () => { entries[el.dataset.i][el.dataset.k] = el.value; }));
+        box.querySelectorAll('[data-del-e]').forEach((b) => b.addEventListener('click', () => { entries.splice(Number(b.dataset.delE), 1); renderEntries(); }));
+      }
+      function renderFocus() {
+        const box = main.querySelector('#focus-list');
+        box.innerHTML = months().map((m) => {
+          const key = toISO(m);
+          const row = monthFocus.find((f) => (f.month || '').slice(0, 7) === key.slice(0, 7));
+          const text = row ? (row.bullets || []).join('\n') : '';
+          return `<label class="fc-field"><span>${fmtMonth(m)}</span><textarea data-month="${key}" placeholder="One bullet per line">${esc(text)}</textarea></label>`;
+        }).join('');
+        box.querySelectorAll('textarea').forEach((ta) => ta.addEventListener('input', () => {
+          const key = ta.dataset.month;
+          const bullets = ta.value.split('\n').map((s) => s.trim()).filter(Boolean);
+          let row = monthFocus.find((f) => (f.month || '').slice(0, 7) === key.slice(0, 7));
+          if (!row) { row = { month: key, bullets: [] }; monthFocus.push(row); }
+          row.month = key; row.bullets = bullets;
+        }));
+      }
+      function renderNotes() {
+        const box = main.querySelector('#notes-list');
+        box.innerHTML = notes.map((n, i) => `
+          <div class="fc-card" style="margin-bottom:10px;background:var(--fc-line-2)">
+            <div class="fc-row"><label class="fc-field"><span>Heading</span><input data-i="${i}" data-k="heading" value="${esc(n.heading)}" /></label>
+            <button class="fc-btn fc-btn--sm fc-btn--ghost" data-del-note="${i}">Remove box</button></div>
+            <label class="fc-field"><span>Rows (one per line, "Label: text")</span><textarea data-i="${i}" data-k="rows">${esc((n.rows || []).map((r) => `${r.label}: ${r.text}`).join('\n'))}</textarea></label>
+          </div>`).join('') || '<p class="fc-muted">No note boxes.</p>';
+        box.querySelectorAll('[data-k="heading"]').forEach((el) => el.addEventListener('input', () => { notes[el.dataset.i].heading = el.value; }));
+        box.querySelectorAll('[data-k="rows"]').forEach((el) => el.addEventListener('input', () => {
+          notes[el.dataset.i].rows = el.value.split('\n').map((s) => s.trim()).filter(Boolean).map((line) => { const ix = line.indexOf(':'); return ix >= 0 ? { label: line.slice(0, ix).trim(), text: line.slice(ix + 1).trim() } : { label: '', text: line }; });
+        }));
+        box.querySelectorAll('[data-del-note]').forEach((b) => b.addEventListener('click', () => { notes.splice(Number(b.dataset.delNote), 1); renderNotes(); }));
+      }
+
+      // ---- print view
+      function ptClass(i) { return `fc-pt-${i % 5}`; }
+      function printView() {
+        const ms = months();
+        const highlights = entries.filter((e) => e.kind === 'highlight').sort((a, b) => a.date.localeCompare(b.date));
+        const overview = `
+          <div class="doc" style="max-width:860px">
+            <h1 style="font-size:26px;text-transform:uppercase;margin:0">${esc(cal.title) || 'Content Calendar'}</h1>
+            <p class="fc-muted">${esc(cal.platform)} ${cal.platform && cal.client_id ? '·' : ''} ${esc((clients.find((c) => c.id === cal.client_id) || {}).business_name || (clients.find((c) => c.id === cal.client_id) || {}).name || '')} · ${ms.length ? fmtMonth(ms[0]) + ' – ' + fmtMonth(ms[ms.length - 1]) : ''}</p>
+            ${cal.subtitle ? `<p>${esc(cal.subtitle)}</p>` : ''}
+            <div class="fc-grid fc-grid--3" style="margin:16px 0">
+              ${postTypes.map((p, i) => `<div class="pt-card"><span class="cal-post ${ptClass(i)}">${WD[p.weekday]}</span><div class="pt-label" style="margin-top:6px">${esc(p.label)}</div><div class="pt-desc">${esc(p.description)}</div></div>`).join('')}
+            </div>
+            ${highlights.length ? `<h3>Key Moments</h3><ul>${highlights.map((h) => `<li><b>${esc(h.title)}</b> — ${fmtDate(h.date)}${h.detail ? ' · ' + esc(h.detail) : ''}</li>`).join('')}</ul>` : ''}
+            ${notes.map((n) => `<div class="pt-card" style="margin-top:10px"><div class="pt-label">${esc(n.heading)}</div>${(n.rows || []).map((r) => `<div class="pt-desc"><b>${esc(r.label)}</b> ${esc(r.text)}</div>`).join('')}</div>`).join('')}
+            <div class="doc-total" style="margin-top:18px">Total posts <span>${totalPosts()}</span></div>
+            ${cal.footer_note ? `<p class="fc-muted" style="margin-top:12px">${esc(cal.footer_note)}</p>` : ''}
+          </div>`;
+        const monthPages = ms.map((m) => monthGrid(m)).join('');
+        return `<div class="fc-print">${overview}${monthPages}</div>`;
+      }
+      function monthGrid(m) {
+        const y = m.getFullYear(), mo = m.getMonth();
+        const first = new Date(y, mo, 1).getDay();
+        const days = new Date(y, mo + 1, 0).getDate();
+        const ptByWd = {}; postTypes.forEach((p, i) => { (ptByWd[Number(p.weekday)] ||= []).push({ ...p, idx: i }); });
+        const entriesByDate = {}; entries.forEach((e) => { (entriesByDate[e.date] ||= []).push(e); });
+        let cells = '';
+        for (let i = 0; i < first; i++) cells += '<td class="out"></td>';
+        for (let d = 1; d <= days; d++) {
+          const iso = `${y}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          const wd = new Date(y, mo, d).getDay();
+          const dayEntries = entriesByDate[iso] || [];
+          const override = dayEntries.find((e) => e.kind === 'override');
+          let inner = `<div class="daynum">${d}</div>`;
+          if (override) inner += `<span class="cal-post fc-pt-0">${esc(override.title) || 'Override'}</span>`;
+          else (ptByWd[wd] || []).forEach((p) => { inner += `<span class="cal-post ${ptClass(p.idx)}">${esc(p.label)}</span>`; });
+          dayEntries.filter((e) => e.kind === 'highlight').forEach((e) => { inner += `<span class="cal-hl">${esc(e.title)}</span>`; });
+          dayEntries.filter((e) => e.kind === 'task').forEach((e) => { inner += `<span class="cal-entry">• ${esc(e.title)}</span>`; });
+          cells += `<td>${inner}</td>`;
+          if ((first + d) % 7 === 0) cells += '</tr><tr>';
+        }
+        const focus = monthFocus.find((f) => (f.month || '').slice(0, 7) === toISO(m).slice(0, 7));
+        return `<div class="cal-month-page">
+          <h2 style="text-transform:uppercase">${fmtMonth(m)}</h2>
+          <div class="cal-legend">${postTypes.map((p, i) => `<span class="cal-post ${ptClass(i)}">${esc(p.label)}</span>`).join('')}${entries.some((e) => e.kind === 'highlight') ? '<span class="cal-post fc-pt-0">Key moment</span>' : ''}</div>
+          <table class="cal-grid"><thead><tr>${WD.map((w) => `<th>${w}</th>`).join('')}</tr></thead><tbody><tr>${cells}</tr></tbody></table>
+          ${focus && focus.bullets.length ? `<div class="cal-focus"><b>Focus:</b><ul>${focus.bullets.map((b) => `<li>${esc(b)}</li>`).join('')}</ul></div>` : ''}
+        </div>`;
+      }
+
+      function collect() {
+        cal.client_id = main.querySelector('#f-client').value;
+        cal.title = main.querySelector('#f-title').value || null;
+        cal.platform = main.querySelector('#f-platform').value || null;
+        cal.subtitle = main.querySelector('#f-subtitle').value || null;
+        cal.start_month = (main.querySelector('#f-start').value || '') + '-01';
+        cal.month_count = Number(main.querySelector('#f-count').value) || 1;
+        cal.footer_note = main.querySelector('#f-footer').value || null;
+      }
+
+      async function save() {
+        collect();
+        if (!cal.client_id) { toast('Pick a client', 'err'); return; }
+        const payload = { client_id: cal.client_id, title: cal.title, platform: cal.platform, subtitle: cal.subtitle, start_month: cal.start_month, month_count: cal.month_count, footer_note: cal.footer_note };
+        let savedId = cid;
+        if (cid) { const { error } = await table('calendars').update(payload).eq('id', cid); if (error) { toast(error.message, 'err'); return; } }
+        else { const { data, error } = await table('calendars').insert(payload).select('id').single(); if (error) { toast(error.message, 'err'); return; } savedId = data.id; }
+        await Promise.all([
+          table('calendar_post_types').delete().eq('calendar_id', savedId),
+          table('calendar_entries').delete().eq('calendar_id', savedId),
+          table('calendar_month_focus').delete().eq('calendar_id', savedId),
+          table('calendar_notes').delete().eq('calendar_id', savedId),
+        ]);
+        if (postTypes.length) await table('calendar_post_types').insert(postTypes.map((p, i) => ({ calendar_id: savedId, weekday: Number(p.weekday), label: p.label || null, description: p.description || null, sort_order: i })));
+        const validEntries = entries.filter((e) => e.date);
+        if (validEntries.length) await table('calendar_entries').insert(validEntries.map((e) => ({ calendar_id: savedId, date: e.date, title: e.title || null, detail: e.detail || null, kind: e.kind })));
+        const validFocus = monthFocus.filter((f) => f.month && (f.bullets || []).length);
+        if (validFocus.length) await table('calendar_month_focus').insert(validFocus.map((f) => ({ calendar_id: savedId, month: f.month, bullets: f.bullets })));
+        if (notes.length) await table('calendar_notes').insert(notes.map((n, i) => ({ calendar_id: savedId, heading: n.heading || null, rows: n.rows || [], sort_order: i })));
+        if (!cid) { location.href = `calendar.html?id=${savedId}`; return; }
+        toast('Calendar saved');
+      }
+
+      function wire() {
+        ['#f-start', '#f-count'].forEach((s) => main.querySelector(s).addEventListener('change', () => { collect(); render(); }));
+        main.querySelector('#f-client').addEventListener('change', (e) => { cal.client_id = e.target.value; });
+        main.querySelector('#add-pt').addEventListener('click', () => { collect(); postTypes.push({ weekday: 1, label: '', description: '' }); render(); });
+        main.querySelector('#add-entry').addEventListener('click', () => { collect(); entries.push({ date: '', kind: 'highlight', title: '', detail: '' }); render(); });
+        main.querySelector('#add-note').addEventListener('click', () => { collect(); notes.push({ heading: '', rows: [] }); render(); });
+        main.querySelector('#save-btn').addEventListener('click', save);
+        main.querySelector('#print-btn').addEventListener('click', () => window.print());
+        const dup = main.querySelector('#dup-btn');
+        if (dup) dup.addEventListener('click', openDuplicate);
+      }
+
+      function openDuplicate() {
+        const dlg = main.querySelector('#dlg');
+        dlg.innerHTML = `<form class="fc-dialog-body" id="dform">
+          <h2 style="margin-top:0">Duplicate calendar</h2>
+          <label class="fc-field"><span>Copy to client</span><select name="client">${clients.map((c) => `<option value="${c.id}" ${c.id === cal.client_id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select></label>
+          <label class="fc-field"><span>Shift dates by (months)</span><input type="number" name="shift" value="0" /></label>
+          <div class="fc-row" style="margin-top:6px"><button type="button" class="fc-btn fc-btn--ghost" id="dc">Cancel</button><button class="fc-btn fc-btn--primary" type="submit">Duplicate</button></div>
+        </form>`;
+        dlg.showModal();
+        dlg.querySelector('#dc').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#dform').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const f = new FormData(e.target); const shift = Number(f.get('shift')) || 0; const targetClient = f.get('client');
+          const shiftISO = (iso) => { const d = parseDate(iso); return toISO(new Date(d.getFullYear(), d.getMonth() + shift, d.getDate())); };
+          const start = parseDate(cal.start_month);
+          const { data: nc, error } = await table('calendars').insert({ client_id: targetClient, title: cal.title, platform: cal.platform, subtitle: cal.subtitle, start_month: toISO(new Date(start.getFullYear(), start.getMonth() + shift, 1)), month_count: cal.month_count, footer_note: cal.footer_note }).select('id').single();
+          if (error) { toast(error.message, 'err'); return; }
+          if (postTypes.length) await table('calendar_post_types').insert(postTypes.map((p, i) => ({ calendar_id: nc.id, weekday: Number(p.weekday), label: p.label || null, description: p.description || null, sort_order: i })));
+          const ve = entries.filter((e2) => e2.date);
+          if (ve.length) await table('calendar_entries').insert(ve.map((e2) => ({ calendar_id: nc.id, date: shiftISO(e2.date), title: e2.title || null, detail: e2.detail || null, kind: e2.kind })));
+          const vf = monthFocus.filter((x) => x.month && (x.bullets || []).length);
+          if (vf.length) await table('calendar_month_focus').insert(vf.map((x) => ({ calendar_id: nc.id, month: shiftISO(x.month), bullets: x.bullets })));
+          if (notes.length) await table('calendar_notes').insert(notes.map((n, i) => ({ calendar_id: nc.id, heading: n.heading || null, rows: n.rows || [], sort_order: i })));
+          location.href = `calendar.html?id=${nc.id}`;
+        });
+      }
+
+      render();
+    }});
+  </script>
+</body>
+</html>

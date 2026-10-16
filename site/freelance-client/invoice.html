@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Invoice · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc, qs, money, fmtDate, todayISO, invoiceBadge } from './app.js';
+    import { nextNumber } from './db.js';
+
+    const METHODS = ['cash', 'check', 'paypal', 'cashapp', 'other'];
+
+    mountApp({ active: 'clients', render: async (main) => {
+      const iid = qs('id');
+      const presetClient = qs('client');
+
+      const [{ data: settings }, { data: clients }] = await Promise.all([
+        table('settings').select('*').eq('id', 1).maybeSingle(),
+        table('clients').select('id,name,business_name').order('name'),
+      ]);
+
+      let inv, items = [];
+      if (iid) {
+        inv = (await table('invoices').select('*').eq('id', iid).maybeSingle()).data;
+        items = (await table('invoice_items').select('*').eq('invoice_id', iid).order('sort_order')).data || [];
+      } else {
+        const net = (settings && settings.default_net_days) || 30;
+        const due = new Date(); due.setDate(due.getDate() + net);
+        inv = { client_id: presetClient || (clients[0] && clients[0].id), issue_date: todayISO(),
+          due_date: `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}-${String(due.getDate()).padStart(2, '0')}`,
+          status: 'draft', terms: '', notes: '', sentry_logged: false };
+      }
+      if (!items.length) items = [{ description: '', quantity: 1, unit_price: 0 }];
+
+      let engagements = [];
+      async function loadEngagements(cid) { engagements = (await table('engagements').select('id,title').eq('client_id', cid).order('created_at', { ascending: false })).data || []; }
+      await loadEngagements(inv.client_id);
+
+      const total = () => items.reduce((s, it) => s + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0), 0);
+      const client = () => clients.find((x) => x.id === inv.client_id) || {};
+      const clientName = () => { const c = client(); return c.business_name || c.name || ''; };
+
+      function render() {
+        const showSentry = iid && inv.status === 'paid' && !inv.sentry_logged;
+        main.innerHTML = `
+        <div class="fc-screen">
+          <div class="fc-page-head fc-no-print">
+            <a class="fc-crumb" href="${inv.client_id ? `client.html?id=${inv.client_id}` : 'clients.html'}">&larr; Back</a>
+            <div class="fc-spacer"></div>
+            ${iid ? invoiceBadge(inv) : ''}
+            <button class="fc-btn" id="print-btn">Print / Save PDF</button>
+            <button class="fc-btn fc-btn--primary" id="save-btn">Save</button>
+          </div>
+          <h1 style="font-family:var(--fc-head);text-transform:uppercase;font-size:30px;margin:0 0 16px">
+            Invoice ${esc(inv.number) || '<span class="fc-muted">(draft)</span>'}
+          </h1>
+
+          ${showSentry ? sentryBanner() : ''}
+
+          <div class="fc-card">
+            <div class="fc-row">
+              <label class="fc-field"><span>Client</span><select id="f-client">${clients.map((c) => `<option value="${c.id}" ${c.id === inv.client_id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select></label>
+              <label class="fc-field"><span>Engagement (optional)</span><select id="f-eng"></select></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Issue date</span><input type="date" id="f-issue" value="${esc(inv.issue_date)}" /></label>
+              <label class="fc-field"><span>Due date</span><input type="date" id="f-due" value="${esc(inv.due_date)}" /></label>
+            </div>
+          </div>
+
+          <div class="fc-card" style="margin-top:16px">
+            <h2>Line items</h2>
+            <table class="fc-table fc-items"><thead><tr><th>Description</th><th style="width:90px">Qty</th><th style="width:130px">Unit price</th><th style="width:120px" class="num">Amount</th><th style="width:40px"></th></tr></thead>
+            <tbody id="items"></tbody></table>
+            <button class="fc-btn fc-btn--sm" id="add-item" style="margin-top:10px">+ Add line</button>
+            <div class="fc-total-line">Total <span id="total">${money(total())}</span></div>
+          </div>
+
+          <div class="fc-card" style="margin-top:16px">
+            <label class="fc-field"><span>Terms</span><textarea id="f-terms">${esc(inv.terms)}</textarea></label>
+            <label class="fc-field"><span>Notes</span><textarea id="f-notes">${esc(inv.notes)}</textarea></label>
+          </div>
+
+          ${iid ? `<div class="fc-card fc-no-print" style="margin-top:16px">
+            <h2>Status & actions</h2>
+            <div class="fc-row" style="align-items:center">
+              <button class="fc-btn fc-btn--sm ${inv.status === 'draft' ? 'fc-btn--dark' : 'fc-btn--ghost'}" data-status="draft">draft</button>
+              <button class="fc-btn fc-btn--sm ${inv.status === 'sent' ? 'fc-btn--dark' : 'fc-btn--ghost'}" data-status="sent">sent</button>
+              <button class="fc-btn fc-btn--sm fc-btn--primary" id="mark-paid">Mark paid…</button>
+              <button class="fc-btn fc-btn--sm ${inv.status === 'void' ? 'fc-btn--dark' : 'fc-btn--ghost'}" data-status="void">void</button>
+              ${inv.status === 'paid' ? `<span class="fc-muted" style="margin-left:auto">Paid ${fmtDate(inv.paid_date)} · ${esc(inv.payment_method) || ''}</span>` : ''}
+            </div>
+          </div>` : ''}
+        </div>
+        ${printDoc()}
+        <dialog id="pay-dlg" class="fc-dialog"></dialog>`;
+
+        renderEngOptions(); renderItems(); wire();
+      }
+
+      function sentryBanner() {
+        return `<div class="fc-banner fc-no-print">
+          <div style="flex:1">
+            <b>Add this payment to Sentry as income and mark it Tax relevant.</b>
+            <div class="fc-muted" style="margin-top:4px">${esc(clientName())} · ${esc(inv.number)} · ${money(total())} · ${fmtDate(inv.paid_date)}</div>
+          </div>
+          <button class="fc-btn fc-btn--sm" id="copy-sentry">Copy details</button>
+          <label class="fc-check"><input type="checkbox" id="sentry-logged"/> Logged in Sentry</label>
+        </div>`;
+      }
+
+      function renderEngOptions() {
+        main.querySelector('#f-eng').innerHTML = `<option value="">—</option>` + engagements.map((e) => `<option value="${e.id}" ${e.id === inv.engagement_id ? 'selected' : ''}>${esc(e.title || 'Engagement')}</option>`).join('');
+      }
+
+      function renderItems() {
+        const tb = main.querySelector('#items');
+        tb.innerHTML = items.map((it, i) => `
+          <tr>
+            <td><input data-i="${i}" data-k="description" value="${esc(it.description)}" /></td>
+            <td><input data-i="${i}" data-k="quantity" type="number" step="0.01" value="${esc(it.quantity)}" /></td>
+            <td><input data-i="${i}" data-k="unit_price" type="number" step="0.01" value="${esc(it.unit_price)}" /></td>
+            <td class="num">${money((Number(it.quantity) || 0) * (Number(it.unit_price) || 0))}</td>
+            <td><button class="fc-btn fc-btn--sm fc-btn--ghost" data-del="${i}">✕</button></td>
+          </tr>`).join('');
+        tb.querySelectorAll('input').forEach((inp) => inp.addEventListener('input', () => {
+          items[inp.dataset.i][inp.dataset.k] = inp.value;
+          main.querySelector('#total').textContent = money(total());
+          inp.closest('tr').querySelector('.num').textContent = money((Number(items[inp.dataset.i].quantity) || 0) * (Number(items[inp.dataset.i].unit_price) || 0));
+        }));
+        tb.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => { items.splice(Number(b.dataset.del), 1); if (!items.length) items.push({ description: '', quantity: 1, unit_price: 0 }); renderItems(); main.querySelector('#total').textContent = money(total()); }));
+      }
+
+      function printDoc() {
+        const s = settings || {};
+        return `<div class="fc-print"><div class="doc">
+          <div class="doc-head">
+            <div class="doc-biz"><h1>${esc(s.business_name) || 'Robby Myers'}</h1>
+              ${s.address ? `<p>${esc(s.address)}</p>` : ''}${s.email ? `<p>${esc(s.email)}</p>` : ''}${s.phone ? `<p>${esc(s.phone)}</p>` : ''}</div>
+            <div class="doc-meta"><div class="doc-number">INVOICE ${esc(inv.number) || ''}</div>
+              <p>Issued ${fmtDate(inv.issue_date)}</p><p>Due ${fmtDate(inv.due_date)}</p>
+              ${inv.status === 'paid' ? `<p>Paid ${fmtDate(inv.paid_date)}</p>` : ''}</div>
+          </div>
+          <div class="doc-two"><div><h3>Bill to</h3><p>${esc(clientName())}</p></div></div>
+          <table><thead><tr><th>Description</th><th class="num">Qty</th><th class="num">Unit</th><th class="num">Amount</th></tr></thead>
+          <tbody>${items.map((it) => `<tr><td>${esc(it.description)}</td><td class="num">${esc(it.quantity)}</td><td class="num">${money(it.unit_price)}</td><td class="num">${money((Number(it.quantity) || 0) * (Number(it.unit_price) || 0))}</td></tr>`).join('')}</tbody></table>
+          <div class="doc-total">${inv.status === 'paid' ? 'Paid' : 'Total due'} <span>${money(total())}</span></div>
+          <div class="doc-foot">
+            ${s.payment_instructions ? `<h3>Payment</h3><p>${esc(s.payment_instructions)}</p>` : ''}
+            ${inv.terms ? `<h3>Terms</h3><p>${esc(inv.terms)}</p>` : ''}
+            ${inv.notes ? `<p>${esc(inv.notes)}</p>` : ''}
+            ${s.footer_text ? `<p style="margin-top:14px">${esc(s.footer_text)}</p>` : ''}
+          </div>
+        </div></div>`;
+      }
+
+      function collect() {
+        inv.client_id = main.querySelector('#f-client').value;
+        inv.engagement_id = main.querySelector('#f-eng').value || null;
+        inv.issue_date = main.querySelector('#f-issue').value || null;
+        inv.due_date = main.querySelector('#f-due').value || null;
+        inv.terms = main.querySelector('#f-terms').value || null;
+        inv.notes = main.querySelector('#f-notes').value || null;
+      }
+
+      async function save(silent) {
+        collect();
+        if (!inv.client_id) { toast('Pick a client', 'err'); return null; }
+        if (!iid && !inv.number) inv.number = await nextNumber('invoice');
+        const payload = { number: inv.number, client_id: inv.client_id, engagement_id: inv.engagement_id, quote_id: inv.quote_id || null,
+          issue_date: inv.issue_date, due_date: inv.due_date, status: inv.status, paid_date: inv.paid_date || null,
+          payment_method: inv.payment_method || null, sentry_logged: inv.sentry_logged, terms: inv.terms, notes: inv.notes };
+        let savedId = iid;
+        if (iid) { const { error } = await table('invoices').update(payload).eq('id', iid); if (error) { toast(error.message, 'err'); return null; } }
+        else { const { data, error } = await table('invoices').insert(payload).select('id').single(); if (error) { toast(error.message, 'err'); return null; } savedId = data.id; }
+        await table('invoice_items').delete().eq('invoice_id', savedId);
+        const clean = items.filter((it) => (it.description || '').trim() || Number(it.unit_price));
+        if (clean.length) await table('invoice_items').insert(clean.map((it, i) => ({ invoice_id: savedId, description: it.description || null, quantity: Number(it.quantity) || 0, unit_price: Number(it.unit_price) || 0, sort_order: i })));
+        if (!iid) { location.href = `invoice.html?id=${savedId}`; return savedId; }
+        if (!silent) toast('Invoice saved');
+        return savedId;
+      }
+
+      function wire() {
+        main.querySelector('#f-client').addEventListener('change', async (e) => { inv.client_id = e.target.value; await loadEngagements(inv.client_id); inv.engagement_id = null; renderEngOptions(); });
+        main.querySelector('#add-item').addEventListener('click', () => { items.push({ description: '', quantity: 1, unit_price: 0 }); renderItems(); });
+        main.querySelector('#save-btn').addEventListener('click', () => save(false));
+        main.querySelector('#print-btn').addEventListener('click', () => window.print());
+        main.querySelectorAll('[data-status]').forEach((b) => b.addEventListener('click', async () => { collect(); inv.status = b.dataset.status; await table('invoices').update({ status: inv.status }).eq('id', iid); toast(`Marked ${inv.status}`); render(); }));
+
+        const mp = main.querySelector('#mark-paid');
+        if (mp) mp.addEventListener('click', openPaid);
+
+        const copy = main.querySelector('#copy-sentry');
+        if (copy) copy.addEventListener('click', () => {
+          const txt = `Income — ${clientName()} — ${inv.number} — ${money(total())} — paid ${fmtDate(inv.paid_date)} (${inv.payment_method || ''}). Tax relevant.`;
+          navigator.clipboard.writeText(txt).then(() => toast('Copied for Sentry')).catch(() => toast('Copy failed', 'err'));
+        });
+        const chk = main.querySelector('#sentry-logged');
+        if (chk) chk.addEventListener('change', async (e) => { inv.sentry_logged = e.target.checked; await table('invoices').update({ sentry_logged: inv.sentry_logged }).eq('id', iid); if (inv.sentry_logged) render(); });
+      }
+
+      function openPaid() {
+        const dlg = main.querySelector('#pay-dlg');
+        dlg.innerHTML = `<form class="fc-dialog-body" id="pform">
+          <h2 style="margin-top:0">Mark paid</h2>
+          <div class="fc-row">
+            <label class="fc-field"><span>Paid date</span><input type="date" name="paid_date" value="${todayISO()}" /></label>
+            <label class="fc-field"><span>Method</span><select name="payment_method">${METHODS.map((m) => `<option value="${m}">${m}</option>`).join('')}</select></label>
+          </div>
+          <div class="fc-row" style="margin-top:6px">
+            <button type="button" class="fc-btn fc-btn--ghost" id="pc">Cancel</button>
+            <button class="fc-btn fc-btn--primary" type="submit">Confirm paid</button>
+          </div></form>`;
+        dlg.showModal();
+        dlg.querySelector('#pc').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#pform').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const f = new FormData(e.target);
+          await save(true);
+          inv.status = 'paid'; inv.paid_date = f.get('paid_date'); inv.payment_method = f.get('payment_method'); inv.sentry_logged = false;
+          await table('invoices').update({ status: 'paid', paid_date: inv.paid_date, payment_method: inv.payment_method, sentry_logged: false }).eq('id', iid);
+          dlg.close(); render();
+        });
+      }
+
+      render();
+    }});
+  </script>
+</body>
+</html>

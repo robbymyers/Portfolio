@@ -1,0 +1,232 @@
+/* Freelance Client Tool — app styles.
+   Reuses the site's variables + @font-face (pages link ../css/styles.css first).
+   All color derives from --color-red / --color-black / --color-white via
+   color-mix(): no new hex, no new hues. */
+
+:root {
+  --fc-accent:        var(--color-red);
+  --fc-accent-strong: color-mix(in srgb, var(--color-red) 82%, black);
+  --fc-accent-tint:   color-mix(in srgb, var(--color-red) 12%, white);
+  --fc-accent-tint-2: color-mix(in srgb, var(--color-red) 26%, white);
+  --fc-accent-fg:     white;
+
+  --fc-ink:     var(--color-black);
+  --fc-ink-70:  color-mix(in srgb, var(--color-black) 68%, white);
+  --fc-ink-50:  color-mix(in srgb, var(--color-black) 48%, white);
+  --fc-line:    color-mix(in srgb, var(--color-black) 14%, white);
+  --fc-line-2:  color-mix(in srgb, var(--color-black) 7%, white);
+
+  --fc-paper:   var(--color-white);
+  --fc-card:    white;
+  --fc-gray-tint: color-mix(in srgb, var(--color-black) 8%, white);
+  --fc-gray-ink:  color-mix(in srgb, var(--color-black) 52%, white);
+
+  --fc-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+  --fc-head: "Titling Gothic FB Wide", var(--fc-font);
+  --fc-radius: 12px;
+  --fc-shadow: 0 1px 2px color-mix(in srgb, var(--color-black) 10%, transparent),
+               0 8px 24px color-mix(in srgb, var(--color-black) 6%, transparent);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--fc-paper);
+  color: var(--fc-ink);
+  font-family: var(--fc-font);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--fc-accent-strong); }
+h1, h2, h3 { font-family: var(--fc-head); font-weight: 500; letter-spacing: 0.01em; }
+
+/* ---------- Top bar ---------- */
+.fc-topbar {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 24px;
+  padding: 0 24px; height: 60px;
+  background: var(--fc-card);
+  border-bottom: 1px solid var(--fc-line);
+}
+.fc-brand { font-family: var(--fc-head); font-size: 18px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fc-ink); text-decoration: none; }
+.fc-brand span { color: var(--fc-accent); margin: 0 4px; }
+.fc-nav { display: flex; gap: 6px; margin-right: auto; }
+.fc-nav a {
+  padding: 7px 12px; border-radius: 8px; text-decoration: none;
+  color: var(--fc-ink-70); font-weight: 500; font-size: 14px;
+}
+.fc-nav a:hover { background: var(--fc-line-2); color: var(--fc-ink); }
+.fc-nav a.is-active { background: var(--fc-ink); color: white; }
+.fc-user { display: flex; align-items: center; gap: 12px; }
+.fc-user-email { font-size: 13px; color: var(--fc-ink-50); }
+
+/* ---------- Layout ---------- */
+.fc-main { max-width: 1100px; margin: 0 auto; padding: 28px 24px 80px; }
+.fc-page-head { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.fc-page-head h1 { font-size: 30px; margin: 0; text-transform: uppercase; }
+.fc-page-head .fc-spacer { margin-left: auto; }
+.fc-crumb { color: var(--fc-ink-50); text-decoration: none; font-size: 14px; }
+.fc-crumb:hover { color: var(--fc-accent-strong); }
+
+.fc-grid { display: grid; gap: 18px; }
+.fc-grid--2 { grid-template-columns: repeat(2, 1fr); }
+.fc-grid--3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 760px) { .fc-grid--2, .fc-grid--3 { grid-template-columns: 1fr; } }
+
+/* ---------- Cards ---------- */
+.fc-card { background: var(--fc-card); border: 1px solid var(--fc-line); border-radius: var(--fc-radius); padding: 18px 20px; }
+.fc-card h2 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fc-ink-50); margin: 0 0 12px; }
+.fc-stat { font-family: var(--fc-head); font-size: 34px; }
+.fc-stat-sub { color: var(--fc-ink-50); font-size: 13px; }
+
+/* ---------- Buttons ---------- */
+.fc-btn {
+  font-family: var(--fc-font); font-size: 14px; font-weight: 600;
+  padding: 9px 16px; border-radius: 9px; border: 1px solid transparent;
+  cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px;
+  background: var(--fc-gray-tint); color: var(--fc-ink);
+}
+.fc-btn:hover { background: color-mix(in srgb, var(--color-black) 14%, white); }
+.fc-btn--primary { background: var(--fc-accent); color: var(--fc-accent-fg); }
+.fc-btn--primary:hover { background: var(--fc-accent-strong); }
+.fc-btn--dark { background: var(--fc-ink); color: white; }
+.fc-btn--ghost { background: transparent; border-color: var(--fc-line); color: var(--fc-ink-70); }
+.fc-btn--ghost:hover { background: var(--fc-line-2); }
+.fc-btn--sm { padding: 5px 10px; font-size: 13px; }
+.fc-btn--danger { background: transparent; border-color: color-mix(in srgb, var(--color-red) 40%, white); color: var(--fc-accent-strong); }
+.fc-btn[disabled] { opacity: 0.5; cursor: default; }
+
+/* ---------- Forms ---------- */
+.fc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.fc-field > span { font-size: 12.5px; font-weight: 600; color: var(--fc-ink-70); text-transform: uppercase; letter-spacing: 0.04em; }
+input, select, textarea {
+  font-family: var(--fc-font); font-size: 15px; color: var(--fc-ink);
+  padding: 9px 11px; border: 1px solid var(--fc-line); border-radius: 9px; background: white; width: 100%;
+}
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--fc-accent-tint-2); border-color: var(--fc-accent); }
+textarea { resize: vertical; min-height: 72px; }
+.fc-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.fc-row > * { flex: 1; min-width: 160px; }
+
+/* ---------- Tables ---------- */
+.fc-table { width: 100%; border-collapse: collapse; }
+.fc-table th { text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fc-ink-50); padding: 8px 10px; border-bottom: 1px solid var(--fc-line); }
+.fc-table td { padding: 11px 10px; border-bottom: 1px solid var(--fc-line-2); }
+.fc-table tr:hover td { background: var(--fc-line-2); }
+.fc-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.fc-rowlink { cursor: pointer; }
+
+/* ---------- Badges (fills vs outlines; label always present) ---------- */
+.fc-badge { display: inline-block; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; padding: 3px 9px; border-radius: 999px; border: 1.5px solid transparent; text-transform: uppercase; }
+/* invoices: draft=outlined gray, sent=outlined orange, paid=filled black, overdue=filled orange, void=gray struck */
+.fc-badge--inv-draft { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
+.fc-badge--inv-sent  { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
+.fc-badge--inv-paid  { background: var(--fc-ink); color: white; }
+.fc-badge--inv-overdue { background: var(--fc-accent); color: var(--fc-accent-fg); }
+.fc-badge--inv-void  { background: var(--fc-gray-tint); color: var(--fc-gray-ink); text-decoration: line-through; }
+/* quotes: draft=outlined gray, sent=outlined orange, accepted=filled black, declined/expired=gray */
+.fc-badge--q-draft    { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
+.fc-badge--q-sent     { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
+.fc-badge--q-accepted { background: var(--fc-ink); color: white; }
+.fc-badge--q-declined, .fc-badge--q-expired { background: var(--fc-gray-tint); color: var(--fc-gray-ink); }
+/* client status */
+.fc-badge--c-prospect { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
+.fc-badge--c-active   { background: var(--fc-ink); color: white; }
+.fc-badge--c-past     { background: var(--fc-gray-tint); color: var(--fc-gray-ink); }
+
+/* ---------- Calendar post-type palette (cycles; labels always shown) ---------- */
+.fc-pt-0 { background: var(--fc-accent); color: var(--fc-accent-fg); border: 1.5px solid var(--fc-accent); }
+.fc-pt-1 { background: var(--fc-ink); color: white; border: 1.5px solid var(--fc-ink); }
+.fc-pt-2 { background: var(--fc-accent-tint); color: var(--fc-accent-strong); border: 1.5px solid var(--fc-accent); }
+.fc-pt-3 { background: white; color: var(--fc-ink); border: 1.5px solid var(--fc-ink); }
+.fc-pt-4 { background: var(--fc-gray-tint); color: var(--fc-gray-ink); border: 1.5px solid var(--fc-line); }
+
+/* ---------- Login / notice ---------- */
+.fc-login { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.fc-login-card { background: var(--fc-card); border: 1px solid var(--fc-line); border-radius: 16px; padding: 32px; width: 100%; max-width: 380px; box-shadow: var(--fc-shadow); }
+.fc-login-title { font-size: 26px; margin: 0 0 4px; text-transform: uppercase; }
+.fc-login-sub { color: var(--fc-ink-50); margin: 0 0 20px; }
+.fc-login-error { color: var(--fc-accent-strong); font-size: 13px; margin: 10px 0 0; }
+.fc-login-card .fc-btn { width: 100%; justify-content: center; margin-top: 6px; }
+
+/* ---------- Misc ---------- */
+.fc-empty { text-align: center; color: var(--fc-ink-50); padding: 40px; }
+.fc-list-head { display: flex; align-items: center; gap: 12px; margin: 22px 0 10px; }
+.fc-list-head h2 { font-size: 15px; margin: 0; text-transform: uppercase; letter-spacing: 0.04em; }
+.fc-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 4px 10px; border: 1px solid var(--fc-line); border-radius: 999px; background: white; cursor: pointer; }
+.fc-chip.is-on { background: var(--fc-ink); color: white; border-color: var(--fc-ink); }
+.fc-banner { background: var(--fc-accent-tint); border: 1px solid var(--fc-accent); border-radius: var(--fc-radius); padding: 14px 18px; margin-bottom: 18px; display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+.fc-banner b { font-weight: 700; }
+.fc-items td input { padding: 6px 8px; }
+.fc-muted { color: var(--fc-ink-50); }
+.fc-right { text-align: right; }
+.fc-total-line { display: flex; justify-content: flex-end; gap: 24px; font-family: var(--fc-head); font-size: 22px; padding: 10px 2px; }
+
+/* toast */
+#fc-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; }
+.fc-toast { background: var(--fc-ink); color: white; padding: 10px 16px; border-radius: 10px; font-size: 14px; box-shadow: var(--fc-shadow); transition: opacity 0.3s, transform 0.3s; }
+.fc-toast--err { background: var(--fc-accent-strong); }
+.fc-toast.out { opacity: 0; transform: translateY(8px); }
+
+/* =====================================================================
+   PRINT — one clean page, no app chrome. Used by quote/invoice/calendar.
+   ===================================================================== */
+.fc-print { display: none; }
+@media print {
+  @page { margin: 0.6in; }
+  body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .fc-topbar, .fc-no-print, #fc-toast { display: none !important; }
+  .fc-main { max-width: none; margin: 0; padding: 0; }
+  .fc-screen { display: none !important; }
+  .fc-print { display: block !important; }
+  .fc-print .page-break { page-break-before: always; }
+  .fc-badge, .fc-pt-0, .fc-pt-1, .fc-pt-2, .fc-pt-3, .fc-pt-4 { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* ---------- Print document (quote / invoice) ---------- */
+.doc { max-width: 720px; margin: 0 auto; color: var(--fc-ink); }
+.doc-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--fc-ink); padding-bottom: 16px; margin-bottom: 22px; }
+.doc-biz h1 { font-size: 24px; margin: 0 0 4px; text-transform: uppercase; }
+.doc-biz p, .doc-meta p { margin: 1px 0; font-size: 13px; color: var(--fc-ink-70); }
+.doc-meta { text-align: right; }
+.doc-meta .doc-number { font-family: var(--fc-head); font-size: 20px; color: var(--fc-ink); }
+.doc-two { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
+.doc-two h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fc-ink-50); margin: 0 0 4px; }
+.doc table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+.doc table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fc-ink-50); border-bottom: 1px solid var(--fc-ink); padding: 6px 8px; }
+.doc table td { padding: 8px; border-bottom: 1px solid var(--fc-line); font-size: 14px; }
+.doc .num { text-align: right; font-variant-numeric: tabular-nums; }
+.doc-total { display: flex; justify-content: flex-end; gap: 32px; font-family: var(--fc-head); font-size: 20px; padding: 10px 8px; border-top: 2px solid var(--fc-ink); margin-top: 2px; }
+.doc-foot { margin-top: 26px; font-size: 12.5px; color: var(--fc-ink-70); }
+.doc-foot h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fc-ink-50); margin: 14px 0 3px; }
+
+/* ---------- Calendar builder + print grid ---------- */
+.cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.cal-grid th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fc-ink-50); padding: 5px; border: 1px solid var(--fc-line); }
+.cal-grid td { border: 1px solid var(--fc-line); vertical-align: top; height: 92px; padding: 4px; }
+.cal-grid .daynum { font-size: 11px; color: var(--fc-ink-50); }
+.cal-grid .cal-post { display: block; font-size: 10.5px; font-weight: 700; padding: 2px 5px; border-radius: 5px; margin-top: 3px; }
+.cal-grid .cal-entry { display: block; font-size: 10px; margin-top: 2px; }
+.cal-grid .cal-hl { background: var(--fc-accent); color: var(--fc-accent-fg); font-weight: 700; padding: 2px 5px; border-radius: 5px; }
+.cal-grid td.out { background: var(--fc-line-2); }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.cal-legend .cal-post { font-size: 11px; padding: 3px 9px; border-radius: 6px; font-weight: 700; }
+.cal-month-page { page-break-before: always; }
+@media print { .cal-month-page { size: landscape; } }
+.cal-focus { margin: 10px 0; }
+.cal-focus li { font-size: 12px; }
+.pt-card { border: 1px solid var(--fc-line); border-radius: 10px; padding: 12px; }
+.pt-card .pt-label { font-weight: 700; }
+.pt-card .pt-desc { font-size: 13px; color: var(--fc-ink-70); }
+
+/* ---------- Dialog ---------- */
+.fc-dialog { border: none; border-radius: 16px; padding: 0; max-width: 560px; width: 92%; box-shadow: var(--fc-shadow); }
+.fc-dialog::backdrop { background: color-mix(in srgb, var(--color-black) 45%, transparent); }
+.fc-dialog-body { padding: 24px; }
+.fc-check { display: flex; align-items: center; gap: 9px; padding: 7px 0; font-size: 14px; }
+.fc-check input { width: auto; }
+.fc-section { margin-top: 30px; }
+.fc-kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 14px; }
+.fc-kv dt { color: var(--fc-ink-50); }
+.fc-kv dd { margin: 0; }

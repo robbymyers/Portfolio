@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Settings · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc } from './app.js';
+
+    mountApp({ active: 'settings', render: async (main) => {
+      const { data } = await table('settings').select('*').eq('id', 1).maybeSingle();
+      const s = data || {};
+      main.innerHTML = `
+        <div class="fc-page-head"><h1>Settings</h1></div>
+        <form class="fc-card" id="set-form" style="max-width:720px">
+          <h2>Business</h2>
+          <div class="fc-row">
+            <label class="fc-field"><span>Business name</span><input name="business_name" value="${esc(s.business_name)}" /></label>
+            <label class="fc-field"><span>Email</span><input name="email" value="${esc(s.email)}" /></label>
+          </div>
+          <div class="fc-row">
+            <label class="fc-field"><span>Phone</span><input name="phone" value="${esc(s.phone)}" /></label>
+            <label class="fc-field"><span>Address</span><input name="address" value="${esc(s.address)}" /></label>
+          </div>
+          <label class="fc-field"><span>Payment instructions</span><textarea name="payment_instructions" placeholder="PayPal @handle · Cash App $handle · Checks payable to …">${esc(s.payment_instructions)}</textarea></label>
+          <h2 style="margin-top:18px">Defaults</h2>
+          <div class="fc-row">
+            <label class="fc-field"><span>Payment terms (net days)</span><input type="number" name="default_net_days" value="${esc(s.default_net_days ?? 30)}" /></label>
+            <label class="fc-field"><span>Quote validity (days)</span><input type="number" name="default_quote_validity" value="${esc(s.default_quote_validity ?? 30)}" /></label>
+          </div>
+          <label class="fc-field"><span>Document footer text</span><textarea name="footer_text" placeholder="Thank you for your business.">${esc(s.footer_text)}</textarea></label>
+          <button class="fc-btn fc-btn--primary" type="submit">Save settings</button>
+        </form>`;
+
+      main.querySelector('#set-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = new FormData(e.target);
+        const payload = {
+          id: 1,
+          business_name: f.get('business_name') || null,
+          email: f.get('email') || null,
+          phone: f.get('phone') || null,
+          address: f.get('address') || null,
+          payment_instructions: f.get('payment_instructions') || null,
+          default_net_days: Number(f.get('default_net_days')) || 30,
+          default_quote_validity: Number(f.get('default_quote_validity')) || 30,
+          footer_text: f.get('footer_text') || null,
+          updated_at: new Date().toISOString(),
+        };
+        const { error } = await table('settings').upsert(payload);
+        toast(error ? error.message : 'Settings saved', error ? 'err' : 'ok');
+      });
+    }});
+  </script>
+</body>
+</html>

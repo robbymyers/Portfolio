@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Client · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc, qs, money, fmtDate, todayISO, invoiceBadge, quoteBadge, confirmAction } from './app.js';
+    import { nextNumber } from './db.js';
+
+    const id = qs('id');
+
+    mountApp({ active: 'clients', render: async (main) => {
+      if (!id) { main.innerHTML = '<div class="fc-empty">No client id.</div>'; return; }
+
+      const [{ data: client }, { data: services }, { data: settings }] = await Promise.all([
+        table('clients').select('*').eq('id', id).maybeSingle(),
+        table('services').select('*').order('sort_order'),
+        table('settings').select('*').eq('id', 1).maybeSingle(),
+      ]);
+      if (!client) { main.innerHTML = '<div class="fc-empty">Client not found.</div>'; return; }
+      const svcLabel = Object.fromEntries((services || []).map((s) => [s.service_key, s.label]));
+
+      const [{ data: engagements }, { data: quotes }, { data: invoices }, { data: calendars }, { data: engSvcs }] = await Promise.all([
+        table('engagements').select('*').eq('client_id', id).order('created_at', { ascending: false }),
+        table('quotes').select('*').eq('client_id', id).order('created_at', { ascending: false }),
+        table('invoices').select('*').eq('client_id', id).order('created_at', { ascending: false }),
+        table('calendars').select('*').eq('client_id', id).order('created_at', { ascending: false }),
+        table('engagement_services').select('*'),
+      ]);
+      const esByEng = {};
+      (engSvcs || []).forEach((r) => { (esByEng[r.engagement_id] ||= []).push(r.service_key); });
+
+      main.innerHTML = `
+        <div class="fc-page-head">
+          <a class="fc-crumb" href="clients.html">&larr; Clients</a>
+          <div class="fc-spacer"></div>
+          <button class="fc-btn fc-btn--ghost" id="edit-client">Edit</button>
+        </div>
+        <h1 style="font-family:var(--fc-head);font-size:32px;text-transform:uppercase;margin:0 0 4px">${esc(client.name)}</h1>
+        <p class="fc-muted" style="margin:0 0 18px">
+          ${esc(client.business_name) || ''} <span class="fc-badge fc-badge--c-${client.status}">${client.status}</span>
+        </p>
+        <div class="fc-card">
+          <dl class="fc-kv">
+            ${client.email ? `<dt>Email</dt><dd>${esc(client.email)}</dd>` : ''}
+            ${client.phone ? `<dt>Phone</dt><dd>${esc(client.phone)}</dd>` : ''}
+            ${client.address ? `<dt>Address</dt><dd>${esc(client.address)}</dd>` : ''}
+            ${client.notes ? `<dt>Notes</dt><dd>${esc(client.notes)}</dd>` : ''}
+          </dl>
+        </div>
+
+        <div class="fc-section">
+          <div class="fc-list-head"><h2>Engagements</h2><div class="fc-spacer"></div><button class="fc-btn fc-btn--sm fc-btn--primary" id="new-eng">+ Engagement</button></div>
+          <div id="eng-list"></div>
+        </div>
+
+        <div class="fc-section">
+          <div class="fc-list-head"><h2>Quotes</h2><div class="fc-spacer"></div><a class="fc-btn fc-btn--sm" href="quote.html?client=${id}">+ Quote</a></div>
+          ${listTable(quotes, (q) => `
+            <tr class="fc-rowlink" onclick="location.href='quote.html?id=${q.id}'">
+              <td><b>${esc(q.number) || 'Draft'}</b></td><td>${fmtDate(q.issue_date)}</td>
+              <td>${quoteBadge(q)}</td></tr>`, 'No quotes.')}
+        </div>
+
+        <div class="fc-section">
+          <div class="fc-list-head"><h2>Invoices</h2><div class="fc-spacer"></div><a class="fc-btn fc-btn--sm" href="invoice.html?client=${id}">+ Invoice</a></div>
+          ${listTable(invoices, (i) => `
+            <tr class="fc-rowlink" onclick="location.href='invoice.html?id=${i.id}'">
+              <td><b>${esc(i.number) || 'Draft'}</b></td><td>${fmtDate(i.issue_date)}</td>
+              <td>${invoiceBadge(i)}</td></tr>`, 'No invoices.')}
+        </div>
+
+        <div class="fc-section">
+          <div class="fc-list-head"><h2>Calendars</h2><div class="fc-spacer"></div><a class="fc-btn fc-btn--sm" href="calendar.html?client=${id}">+ Calendar</a></div>
+          ${listTable(calendars, (c) => `
+            <tr class="fc-rowlink" onclick="location.href='calendar.html?id=${c.id}'">
+              <td><b>${esc(c.title) || 'Untitled'}</b></td><td>${esc(c.platform) || ''}</td>
+              <td class="fc-muted">${c.month_count} mo</td></tr>`, 'No calendars.')}
+        </div>
+
+        <dialog id="dlg" class="fc-dialog"></dialog>`;
+
+      function listTable(items, rowFn, empty) {
+        if (!items || !items.length) return `<div class="fc-card fc-empty">${empty}</div>`;
+        return `<div class="fc-card" style="padding:0"><table class="fc-table"><tbody>${items.map(rowFn).join('')}</tbody></table></div>`;
+      }
+
+      // --- Engagements render
+      const engList = main.querySelector('#eng-list');
+      function renderEngagements() {
+        if (!engagements.length) { engList.innerHTML = '<div class="fc-card fc-empty">No engagements.</div>'; return; }
+        engList.innerHTML = engagements.map((e) => {
+          const keys = esByEng[e.id] || [];
+          const combined = keys.map((k) => svcLabel[k]).filter(Boolean).join(' + ') || '—';
+          return `<div class="fc-card" style="margin-bottom:12px">
+            <div style="display:flex;gap:12px;align-items:baseline">
+              <b>${esc(e.title) || 'Engagement'}</b>
+              <span class="fc-badge fc-badge--c-${e.status === 'active' ? 'active' : e.status === 'paused' ? 'prospect' : 'past'}">${e.status}</span>
+              ${e.is_retainer ? `<span class="fc-muted">Retainer ${money(e.retainer_amount)}/mo${e.retainer_billing_day ? ' · bills day ' + e.retainer_billing_day : ''}</span>` : ''}
+              <div class="fc-spacer" style="margin-left:auto"></div>
+              ${e.is_retainer ? `<button class="fc-btn fc-btn--sm fc-btn--primary" data-bill="${e.id}">Create this month's invoice</button>` : ''}
+              <button class="fc-btn fc-btn--sm fc-btn--ghost" data-edit-eng="${e.id}">Edit</button>
+            </div>
+            <div class="fc-muted" style="margin-top:6px">${esc(combined)}</div>
+            ${e.notes ? `<div style="margin-top:6px">${esc(e.notes)}</div>` : ''}
+          </div>`;
+        }).join('');
+
+        engList.querySelectorAll('[data-edit-eng]').forEach((b) =>
+          b.addEventListener('click', () => openEng(engagements.find((x) => x.id === b.dataset.editEng))));
+        engList.querySelectorAll('[data-bill]').forEach((b) =>
+          b.addEventListener('click', () => createRetainerInvoice(engagements.find((x) => x.id === b.dataset.bill))));
+      }
+
+      async function createRetainerInvoice(eng) {
+        const number = await nextNumber('invoice');
+        const net = (settings && settings.default_net_days) || 30;
+        const issue = todayISO();
+        const due = new Date(); due.setDate(due.getDate() + net);
+        const dueISO = `${due.getFullYear()}-${String(due.getMonth() + 1).padStart(2, '0')}-${String(due.getDate()).padStart(2, '0')}`;
+        const monthLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const { data: inv, error } = await table('invoices').insert({
+          number, client_id: id, engagement_id: eng.id, issue_date: issue, due_date: dueISO, status: 'draft',
+        }).select('id').single();
+        if (error) { toast(error.message, 'err'); return; }
+        await table('invoice_items').insert({
+          invoice_id: inv.id, description: `Retainer — ${eng.title || 'Monthly'} — ${monthLabel}`,
+          quantity: 1, unit_price: eng.retainer_amount || 0, sort_order: 0,
+        });
+        location.href = `invoice.html?id=${inv.id}`;
+      }
+
+      // --- Engagement form
+      function openEng(eng) {
+        const dlg = main.querySelector('#dlg');
+        const keys = eng ? (esByEng[eng.id] || []) : [];
+        dlg.innerHTML = `
+          <form class="fc-dialog-body" id="eform">
+            <h2 style="margin-top:0">${eng ? 'Edit' : 'New'} engagement</h2>
+            <label class="fc-field"><span>Title</span><input name="title" value="${esc(eng?.title)}" /></label>
+            <div class="fc-field"><span>Services (package)</span>
+              ${(services || []).map((s) => `<label class="fc-check"><input type="checkbox" name="svc" value="${s.service_key}" ${keys.includes(s.service_key) ? 'checked' : ''}/> ${esc(s.label)}</label>`).join('')}
+            </div>
+            <label class="fc-check"><input type="checkbox" id="is-ret" name="is_retainer" ${eng?.is_retainer ? 'checked' : ''}/> This is a retainer</label>
+            <div id="ret-fields" class="fc-row" ${eng?.is_retainer ? '' : 'hidden'} style="margin-top:8px">
+              <label class="fc-field"><span>Amount / month</span><input type="number" step="0.01" name="retainer_amount" value="${esc(eng?.retainer_amount)}" /></label>
+              <label class="fc-field"><span>Billing day</span><input type="number" min="1" max="28" name="retainer_billing_day" value="${esc(eng?.retainer_billing_day)}" /></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Status</span><select name="status">${['active', 'paused', 'complete'].map((s) => `<option ${eng?.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></label>
+              <label class="fc-field"><span>Start</span><input type="date" name="start_date" value="${esc(eng?.start_date)}" /></label>
+              <label class="fc-field"><span>End</span><input type="date" name="end_date" value="${esc(eng?.end_date)}" /></label>
+            </div>
+            <label class="fc-field"><span>Notes</span><textarea name="notes">${esc(eng?.notes)}</textarea></label>
+            <div class="fc-row" style="margin-top:6px">
+              ${eng ? '<button type="button" class="fc-btn fc-btn--danger" id="del-eng">Delete</button>' : ''}
+              <button type="button" class="fc-btn fc-btn--ghost" id="eng-cancel">Cancel</button>
+              <button class="fc-btn fc-btn--primary" type="submit">Save</button>
+            </div>
+          </form>`;
+        dlg.showModal();
+        const retBox = dlg.querySelector('#ret-fields');
+        dlg.querySelector('#is-ret').addEventListener('change', (ev) => { retBox.hidden = !ev.target.checked; });
+        dlg.querySelector('#eng-cancel').addEventListener('click', () => dlg.close());
+        if (eng) dlg.querySelector('#del-eng').addEventListener('click', async () => {
+          if (!(await confirmAction('Delete this engagement?'))) return;
+          await table('engagements').delete().eq('id', eng.id);
+          location.reload();
+        });
+        dlg.querySelector('#eform').addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const f = new FormData(ev.target);
+          const payload = {
+            client_id: id, title: f.get('title') || null,
+            is_retainer: !!f.get('is_retainer'),
+            retainer_amount: f.get('is_retainer') ? (Number(f.get('retainer_amount')) || null) : null,
+            retainer_billing_day: f.get('is_retainer') ? (Number(f.get('retainer_billing_day')) || null) : null,
+            status: f.get('status'), start_date: f.get('start_date') || null,
+            end_date: f.get('end_date') || null, notes: f.get('notes') || null,
+          };
+          let engId = eng?.id;
+          if (eng) { await table('engagements').update(payload).eq('id', eng.id); }
+          else { const { data } = await table('engagements').insert(payload).select('id').single(); engId = data.id; }
+          // sync services
+          await table('engagement_services').delete().eq('engagement_id', engId);
+          const chosen = f.getAll('svc');
+          if (chosen.length) await table('engagement_services').insert(chosen.map((k) => ({ engagement_id: engId, service_key: k })));
+          location.reload();
+        });
+      }
+
+      main.querySelector('#new-eng').addEventListener('click', () => openEng(null));
+      main.querySelector('#edit-client').addEventListener('click', () => openClientEdit());
+
+      function openClientEdit() {
+        const dlg = main.querySelector('#dlg');
+        dlg.innerHTML = `
+          <form class="fc-dialog-body" id="ced">
+            <h2 style="margin-top:0">Edit client</h2>
+            <div class="fc-row">
+              <label class="fc-field"><span>Name *</span><input name="name" value="${esc(client.name)}" required /></label>
+              <label class="fc-field"><span>Business</span><input name="business_name" value="${esc(client.business_name)}" /></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Email</span><input name="email" value="${esc(client.email)}" /></label>
+              <label class="fc-field"><span>Phone</span><input name="phone" value="${esc(client.phone)}" /></label>
+            </div>
+            <label class="fc-field"><span>Address</span><input name="address" value="${esc(client.address)}" /></label>
+            <label class="fc-field"><span>Notes</span><textarea name="notes">${esc(client.notes)}</textarea></label>
+            <label class="fc-field"><span>Status</span><select name="status">${['prospect', 'active', 'past'].map((s) => `<option ${client.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></label>
+            <div class="fc-row" style="margin-top:6px">
+              <button type="button" class="fc-btn fc-btn--ghost" id="cc">Cancel</button>
+              <button class="fc-btn fc-btn--primary" type="submit">Save</button>
+            </div>
+          </form>`;
+        dlg.showModal();
+        dlg.querySelector('#cc').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#ced').addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          const f = new FormData(ev.target);
+          const payload = Object.fromEntries([...f.entries()].map(([k, v]) => [k, v || null]));
+          const { error } = await table('clients').update(payload).eq('id', id);
+          if (error) { toast(error.message, 'err'); return; }
+          location.reload();
+        });
+      }
+
+      renderEngagements();
+    }});
+  </script>
+</body>
+</html>
