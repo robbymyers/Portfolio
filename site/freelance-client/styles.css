@@ -108,6 +108,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--fc-accent-t
 textarea { resize: vertical; min-height: 72px; }
 .fc-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .fc-row > * { flex: 1; min-width: 160px; }
+.fc-row > .fc-btn { flex: 0 0 auto; min-width: 0; }   /* buttons size to content, don't stretch */
 
 /* ---------- Tables ---------- */
 .fc-table { width: 100%; border-collapse: collapse; }
