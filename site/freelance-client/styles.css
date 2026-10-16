@@ -221,7 +221,7 @@ textarea { resize: vertical; min-height: 72px; }
 .pt-card .pt-desc { font-size: 13px; color: var(--fc-ink-70); }
 
 /* ---------- Dialog ---------- */
-.fc-dialog { border: none; border-radius: 16px; padding: 0; max-width: 560px; width: 92%; box-shadow: var(--fc-shadow); }
+.fc-dialog { border: none; border-radius: 16px; padding: 0; width: 92%; max-width: 560px; margin: auto; inset: 0; height: fit-content; max-height: 90vh; overflow: auto; box-shadow: var(--fc-shadow); }
 .fc-dialog::backdrop { background: color-mix(in srgb, var(--color-black) 45%, transparent); }
 .fc-dialog-body { padding: 24px; }
 .fc-check { display: flex; align-items: center; gap: 9px; padding: 7px 0; font-size: 14px; }
