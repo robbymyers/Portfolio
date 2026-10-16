@@ -84,7 +84,7 @@ h1, h2, h3 { font-family: var(--fc-head); font-weight: 500; letter-spacing: 0.01
 .fc-btn {
   font-family: var(--fc-font); font-size: 14px; font-weight: 600;
   padding: 9px 16px; border-radius: 9px; border: 1px solid transparent;
-  cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px;
+  cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   background: var(--fc-gray-tint); color: var(--fc-ink);
 }
 .fc-btn:hover { background: color-mix(in srgb, var(--color-black) 14%, white); }

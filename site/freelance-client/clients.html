@@ -55,10 +55,10 @@
       function openForm() {
         const dlg = main.querySelector('#dlg');
         dlg.innerHTML = `
-          <form method="dialog" class="fc-dialog-body" id="cform">
+          <form class="fc-dialog-body" id="cform">
             <h2 style="margin-top:0">New client</h2>
             <div class="fc-row">
-              <label class="fc-field"><span>Name *</span><input name="name" required /></label>
+              <label class="fc-field"><span>Name *</span><input name="name" id="c-name" /></label>
               <label class="fc-field"><span>Business</span><input name="business_name" /></label>
             </div>
             <div class="fc-row">
@@ -69,16 +69,19 @@
             <label class="fc-field"><span>Notes</span><textarea name="notes"></textarea></label>
             <label class="fc-field"><span>Status</span><select name="status">${STATUSES.map((s) => `<option value="${s}">${s}</option>`).join('')}</select></label>
             <div class="fc-row" style="margin-top:6px">
-              <button class="fc-btn fc-btn--ghost" value="cancel" formnovalidate>Cancel</button>
-              <button class="fc-btn fc-btn--primary" id="save" value="save">Save client</button>
+              <button type="button" class="fc-btn fc-btn--ghost" id="c-cancel">Cancel</button>
+              <button type="submit" class="fc-btn fc-btn--primary">Save client</button>
             </div>
           </form>`;
         dlg.showModal();
+        dlg.querySelector('#c-cancel').addEventListener('click', () => dlg.close());
         dlg.querySelector('#cform').addEventListener('submit', async (e) => {
-          if (e.submitter && e.submitter.value === 'cancel') return;
           e.preventDefault();
           const f = new FormData(e.target);
-          const payload = Object.fromEntries([...f.entries()].map(([k, v]) => [k, v || null]));
+          const name = (f.get('name') || '').trim();
+          if (!name) { dlg.querySelector('#c-name').focus(); toast('Name is required', 'err'); return; }
+          const payload = Object.fromEntries([...f.entries()].map(([k, v]) => [k, (v && String(v).trim()) || null]));
+          payload.name = name;
           const { data, error } = await table('clients').insert(payload).select('id').single();
           if (error) { toast(error.message, 'err'); return; }
           dlg.close();
