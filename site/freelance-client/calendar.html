@@ -178,7 +178,7 @@
             <label class="fc-field" style="max-width:120px"><span>Weekday</span><select data-i="${i}" data-k="weekday">${WD.map((w, wi) => `<option value="${wi}" ${Number(p.weekday) === wi ? 'selected' : ''}>${w}</option>`).join('')}</select></label>
             <label class="fc-field"><span>Label</span><input data-i="${i}" data-k="label" value="${esc(p.label)}" /></label>
             <label class="fc-field"><span>Description</span><input data-i="${i}" data-k="description" value="${esc(p.description)}" /></label>
-            <button class="fc-btn fc-btn--sm fc-btn--ghost" data-del-pt="${i}">✕</button>
+            <button class="fc-btn fc-btn--sm fc-btn--ghost fc-del" data-del-pt="${i}">✕</button>
           </div>`).join('') || '<p class="fc-muted">No post types yet.</p>';
         box.querySelectorAll('input,select').forEach((el) => el.addEventListener('input', () => { postTypes[el.dataset.i][el.dataset.k] = el.value; }));
         box.querySelectorAll('[data-del-pt]').forEach((b) => b.addEventListener('click', () => { postTypes.splice(Number(b.dataset.delPt), 1); renderPT(); }));
@@ -191,7 +191,7 @@
             <label class="fc-field" style="max-width:130px"><span>Kind</span><select data-i="${i}" data-k="kind">${['highlight', 'task', 'override'].map((k) => `<option ${e.kind === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label>
             <label class="fc-field"><span>Title</span><input data-i="${i}" data-k="title" value="${esc(e.title)}" /></label>
             <label class="fc-field"><span>Detail</span><input data-i="${i}" data-k="detail" value="${esc(e.detail)}" /></label>
-            <button class="fc-btn fc-btn--sm fc-btn--ghost" data-del-e="${i}">✕</button>
+            <button class="fc-btn fc-btn--sm fc-btn--ghost fc-del" data-del-e="${i}">✕</button>
           </div>`).join('') || '<p class="fc-muted">No entries yet.</p>';
         box.querySelectorAll('input,select').forEach((el) => el.addEventListener('input', () => { entries[el.dataset.i][el.dataset.k] = el.value; }));
         box.querySelectorAll('[data-del-e]').forEach((b) => b.addEventListener('click', () => { entries.splice(Number(b.dataset.delE), 1); renderEntries(); }));
@@ -217,7 +217,7 @@
         box.innerHTML = notes.map((n, i) => `
           <div class="fc-card" style="margin-bottom:10px;background:var(--fc-line-2)">
             <div class="fc-row"><label class="fc-field"><span>Heading</span><input data-i="${i}" data-k="heading" value="${esc(n.heading)}" /></label>
-            <button class="fc-btn fc-btn--sm fc-btn--ghost" data-del-note="${i}">Remove box</button></div>
+            <button class="fc-btn fc-btn--sm fc-btn--ghost fc-del" data-del-note="${i}">Remove box</button></div>
             <label class="fc-field"><span>Rows (one per line, "Label: text")</span><textarea data-i="${i}" data-k="rows">${esc((n.rows || []).map((r) => `${r.label}: ${r.text}`).join('\n'))}</textarea></label>
           </div>`).join('') || '<p class="fc-muted">No note boxes.</p>';
         box.querySelectorAll('[data-k="heading"]').forEach((el) => el.addEventListener('input', () => { notes[el.dataset.i].heading = el.value; }));
