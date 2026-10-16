@@ -151,8 +151,34 @@ async function ownerStatus() {
  */
 export async function mountApp({ active, render }) {
   const root = document.getElementById('app') || document.body;
+  let painting = false;
+
+  function fatal(err) {
+    console.error(err);
+    root.innerHTML = noticeHTML('Something went wrong',
+      `<span style="color:var(--fc-ink)">${esc((err && err.message) || err)}</span><br><br>Try reloading. If it persists, let Rob know what this says.`);
+    const so = document.getElementById('fc-signout-2');
+    if (so) so.addEventListener('click', async () => { await signOut(); location.reload(); });
+  }
+
+  // Never leave a blank page: surface uncaught errors + repaint on bf-cache restore.
+  window.addEventListener('error', (e) => { if (!root.children.length) fatal(e.error || e.message); });
+  window.addEventListener('unhandledrejection', (e) => { if (!root.children.length) fatal(e.reason); });
+  window.addEventListener('pageshow', (e) => { if (e.persisted) paint(); });
 
   async function paint() {
+    if (painting) return;
+    painting = true;
+    try {
+      await paintInner();
+    } catch (err) {
+      fatal(err);
+    } finally {
+      painting = false;
+    }
+  }
+
+  async function paintInner() {
     const session = await getSession();
     if (!session) { root.innerHTML = loginHTML(); wireLogin(); return; }
 
