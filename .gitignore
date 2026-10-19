@@ -1,3 +1,9 @@
 .DS_Store
 .vercel
 *.psd
+
+# Rob's own post copy + "internal — do not publish" notes.
+# Kept local (still runnable) so they don't land in the repo if it's public.
+# If the repo is private and you'd rather version these, delete these two lines.
+Hopper-STATUS.md
+supabase/freelance/04_social_seed.sql

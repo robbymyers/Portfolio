@@ -92,25 +92,42 @@ export async function confirmAction(message) {
 // ---------------------------------------------------------------------------
 // App shell + auth gate
 // ---------------------------------------------------------------------------
+const ICON = {
+  dashboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
+  clients: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>',
+  hopper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3 6 1.4 1.4L7 5"/><path d="m3 12 1.4 1.4L7 11"/><path d="m3 18 1.4 1.4L7 17"/></svg>',
+  social: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/></svg>',
+  settings: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+};
 const NAV = [
-  { href: 'index.html', label: 'Dashboard', key: 'dashboard' },
-  { href: 'clients.html', label: 'Clients', key: 'clients' },
-  { href: 'settings.html', label: 'Settings', key: 'settings' },
+  { href: 'index.html', label: 'Dashboard', key: 'dashboard', icon: ICON.dashboard },
+  { href: 'clients.html', label: 'Clients', key: 'clients', icon: ICON.clients },
+  { href: 'hopper.html', label: 'The Hopper', key: 'hopper', icon: ICON.hopper },
+  { href: 'social.html', label: 'Social Calendar', key: 'social', icon: ICON.social },
+  { href: 'settings.html', label: 'Settings', key: 'settings', icon: ICON.settings },
 ];
 
 function shellHTML(active, email) {
+  const links = NAV.map((n) => `<a href="${n.href}" class="fc-navlink ${n.key === active ? 'is-active' : ''}">${n.icon}<span>${n.label}</span></a>`).join('');
   return `
-  <header class="fc-topbar">
-    <a class="fc-brand" href="index.html">Freelance<span>·</span>Studio</a>
-    <nav class="fc-nav">
-      ${NAV.map((n) => `<a href="${n.href}" class="${n.key === active ? 'is-active' : ''}">${n.label}</a>`).join('')}
-    </nav>
-    <div class="fc-user">
-      <span class="fc-user-email">${esc(email)}</span>
-      <button class="fc-btn fc-btn--ghost" id="fc-signout">Sign out</button>
+  <div class="fc-layout">
+    <aside class="fc-sidebar" id="fc-sidebar">
+      <a class="fc-brand" href="index.html"><span class="fc-brand-mark">FS</span><span class="fc-brand-text">Freelance<b>Studio</b></span></a>
+      <nav class="fc-nav">${links}</nav>
+      <div class="fc-side-foot">
+        <span class="fc-user-email">${esc(email)}</span>
+        <button class="fc-btn fc-btn--ghost" id="fc-signout">Sign out</button>
+      </div>
+    </aside>
+    <div class="fc-scrim" id="fc-scrim"></div>
+    <div class="fc-shell">
+      <header class="fc-mobilebar">
+        <button class="fc-hamburger" id="fc-hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+        <a class="fc-brand-m" href="index.html">Freelance<span>·</span>Studio</a>
+      </header>
+      <main class="fc-main" id="fc-main"></main>
     </div>
-  </header>
-  <main class="fc-main" id="fc-main"></main>`;
+  </div>`;
 }
 
 function loginHTML() {
@@ -197,6 +214,7 @@ export async function mountApp({ active, render }) {
 
     root.innerHTML = shellHTML(active, session.user.email);
     document.getElementById('fc-signout').addEventListener('click', async () => { await signOut(); });
+    wireShell();
     try {
       await render(document.getElementById('fc-main'), { user: session.user });
     } catch (err) {
@@ -204,6 +222,16 @@ export async function mountApp({ active, render }) {
       document.getElementById('fc-main').innerHTML =
         `<div class="fc-empty">Something went wrong loading this page.<br><small>${esc(err.message || err)}</small></div>`;
     }
+  }
+
+  function wireShell() {
+    const sb = document.getElementById('fc-sidebar');
+    const scrim = document.getElementById('fc-scrim');
+    const ham = document.getElementById('fc-hamburger');
+    const close = () => { sb.classList.remove('is-open'); scrim.classList.remove('is-open'); };
+    if (ham) ham.addEventListener('click', () => { sb.classList.add('is-open'); scrim.classList.add('is-open'); });
+    if (scrim) scrim.addEventListener('click', close);
+    sb.querySelectorAll('.fc-navlink').forEach((a) => a.addEventListener('click', close));
   }
 
   function wireLogin() {

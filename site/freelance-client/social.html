@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Social Calendar · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc, money, fmtMonth, fmtDate, parseDate, toISO } from './app.js';
+
+    const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const PILLARS = ['Glow-Up', 'One Fix', 'Behind the Brand', 'Human', 'Offer', 'Positioning'];
+    const PILLAR_CLS = { 'Glow-Up': 'fc-pt-0', 'One Fix': 'fc-pt-1', 'Behind the Brand': 'fc-pt-2', 'Human': 'fc-pt-3', 'Offer': 'fc-pt-4', 'Positioning': 'fc-pt-key' };
+    const pillarClass = (p) => PILLAR_CLS[p] || 'fc-pt-key';
+    const PLATFORMS = [['facebook', 'FB'], ['linkedin', 'LI'], ['instagram', 'IG']];
+    const platLabel = (arr) => (arr || []).map((p) => (PLATFORMS.find((x) => x[0] === p) || [, p])[1]).join(' · ');
+    const STATUSES = ['idea', 'drafting', 'ready', 'posted'];
+    const statusBadge = (s) => `<span class="fc-badge fc-badge--s-${s}">${s}</span>`;
+
+    mountApp({ active: 'social', render: async (main) => {
+      let posts = (await table('social_posts').select('*').order('post_order', { nullsFirst: false })).data || [];
+
+      let view = matchMedia('(max-width: 760px)').matches ? 'list' : 'calendar';
+      let filter = 'all';
+      let viewMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+      const filtered = () => filter === 'all' ? posts : posts.filter((p) => p.status === filter);
+
+      function shell() {
+        main.innerHTML = `
+          <div class="fc-page-head" style="flex-wrap:wrap;gap:10px">
+            <h1>Social Calendar</h1>
+            <div class="seg" id="viewseg">
+              <button data-view="calendar">Calendar</button>
+              <button data-view="list">Pipeline</button>
+            </div>
+            <div class="fc-spacer"></div>
+            <button class="fc-btn fc-btn--primary" id="new-post">+ New post</button>
+          </div>
+          <div class="fc-list-head" style="flex-wrap:wrap;gap:8px">
+            ${['all', ...STATUSES].map((s) => `<button class="fc-chip ${s === filter ? 'is-on' : ''}" data-filter="${s}">${s === 'all' ? 'All' : s}${s === 'all' ? ` ${posts.length}` : ` ${posts.filter((p) => p.status === s).length}`}</button>`).join('')}
+          </div>
+          <div id="view"></div>
+          <dialog id="dlg" class="fc-dialog"></dialog>`;
+        main.querySelectorAll('#viewseg button').forEach((b) => b.addEventListener('click', () => { view = b.dataset.view; paint(); }));
+        main.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { filter = b.dataset.filter; shell(); }));
+        main.querySelector('#new-post').addEventListener('click', () => openEdit(null));
+        paint();
+      }
+
+      function paint() {
+        main.querySelectorAll('#viewseg button').forEach((b) => b.classList.toggle('is-on', b.dataset.view === view));
+        const v = main.querySelector('#view');
+        v.innerHTML = view === 'calendar' ? calendarHTML() : listHTML();
+        if (view === 'calendar') {
+          v.querySelector('#prev').addEventListener('click', () => { viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() - 1, 1); paint(); });
+          v.querySelector('#next').addEventListener('click', () => { viewMonth = new Date(viewMonth.getFullYear(), viewMonth.getMonth() + 1, 1); paint(); });
+          v.querySelector('#today').addEventListener('click', () => { const t = new Date(); viewMonth = new Date(t.getFullYear(), t.getMonth(), 1); paint(); });
+        }
+        v.querySelectorAll('[data-post]').forEach((el) => el.addEventListener('click', () => openDetail(el.dataset.post)));
+      }
+
+      function calendarHTML() {
+        const m = viewMonth, y = m.getFullYear(), mo = m.getMonth();
+        const first = new Date(y, mo, 1).getDay();
+        const days = new Date(y, mo + 1, 0).getDate();
+        const byDate = {}; filtered().filter((p) => p.post_date).forEach((p) => { (byDate[p.post_date] ||= []).push(p); });
+        let cells = '';
+        for (let i = 0; i < first; i++) cells += '<td class="out"></td>';
+        for (let d = 1; d <= days; d++) {
+          const iso = `${y}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          let inner = `<div class="daynum">${d}</div>`;
+          (byDate[iso] || []).forEach((p) => { inner += `<span class="cal-post ${pillarClass(p.pillar)}" data-post="${p.id}" style="cursor:pointer">${esc(p.title) || 'Untitled'}</span>`; });
+          cells += `<td>${inner}</td>`;
+          if ((first + d) % 7 === 0) cells += '</tr><tr>';
+        }
+        return `
+          <div class="cal-month-head" style="align-items:center">
+            <h2>${fmtMonth(m)}</h2>
+            <div style="display:flex;gap:6px;margin-left:auto">
+              <button class="fc-btn fc-btn--sm fc-btn--ghost" id="prev">&larr;</button>
+              <button class="fc-btn fc-btn--sm fc-btn--ghost" id="today">Today</button>
+              <button class="fc-btn fc-btn--sm fc-btn--ghost" id="next">&rarr;</button>
+            </div>
+          </div>
+          <div class="cal-legend">${PILLARS.map((p) => `<span class="lg"><span class="sw ${pillarClass(p)}"></span>${p}</span>`).join('')}</div>
+          <div class="cal-wrap"><table class="cal-grid"><thead><tr>${WD.map((w) => `<th>${w}</th>`).join('')}</tr></thead><tbody><tr>${cells}</tr></tbody></table></div>`;
+      }
+
+      function listHTML() {
+        const list = filtered();
+        const scheduled = list.filter((p) => p.post_date).sort((a, b) => a.post_date.localeCompare(b.post_date));
+        const backlog = list.filter((p) => !p.post_date).sort((a, b) => (a.post_order || 0) - (b.post_order || 0));
+        const row = (p) => `
+          <tr class="fc-rowlink" data-post="${p.id}">
+            <td class="fc-muted">${p.post_order ?? ''}</td>
+            <td><b>${esc(p.title) || 'Untitled'}</b>${p.pillar ? ` <span class="fc-badge ${pillarClass(p.pillar)}" style="border:none">${esc(p.pillar)}</span>` : ''}</td>
+            <td class="fc-muted">${platLabel(p.platforms)}</td>
+            <td>${p.post_date ? fmtDate(p.post_date, { weekday: 'short', month: 'short', day: 'numeric' }) : '—'}</td>
+            <td>${statusBadge(p.status)}</td>
+          </tr>`;
+        const tableFor = (items) => items.length ? `<div class="fc-card" style="padding:0;margin-bottom:18px"><table class="fc-table"><thead><tr><th>#</th><th>Post</th><th>Platforms</th><th>Date</th><th>Status</th></tr></thead><tbody>${items.map(row).join('')}</tbody></table></div>` : '';
+        return `
+          ${scheduled.length ? '<div class="fc-list-head"><h2>Scheduled</h2></div>' + tableFor(scheduled) : ''}
+          ${backlog.length ? '<div class="fc-list-head"><h2>Backlog (unscheduled)</h2></div>' + tableFor(backlog) : ''}
+          ${!scheduled.length && !backlog.length ? '<div class="fc-card fc-empty">No posts.</div>' : ''}`;
+      }
+
+      function openDetail(id) {
+        const p = posts.find((x) => x.id === id); if (!p) return;
+        const dlg = main.querySelector('#dlg');
+        dlg.innerHTML = `
+          <div class="fc-dialog-body">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              ${statusBadge(p.status)} ${p.pillar ? `<span class="fc-badge ${pillarClass(p.pillar)}" style="border:none">${esc(p.pillar)}</span>` : ''}
+              <div class="fc-spacer" style="margin-left:auto"></div>
+              <button class="fc-btn fc-btn--sm fc-btn--ghost" id="d-edit">Edit</button>
+              <button class="fc-btn fc-btn--sm fc-btn--ghost" id="d-close">Close</button>
+            </div>
+            <h2 style="margin:12px 0 4px">${esc(p.title) || 'Untitled'}</h2>
+            <p class="fc-muted" style="margin:0 0 12px">${p.post_date ? fmtDate(p.post_date, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : 'Unscheduled'}${p.platforms && p.platforms.length ? ' · ' + platLabel(p.platforms) : ''}</p>
+            ${p.copy ? `<div style="white-space:pre-wrap;line-height:1.6;border-left:3px solid var(--fc-line);padding-left:14px">${esc(p.copy)}</div>` : '<p class="fc-muted">No copy yet.</p>'}
+            ${p.visual ? `<p style="margin-top:14px"><span class="fc-muted" style="text-transform:uppercase;font-size:11px;letter-spacing:.05em">Visual</span><br>${esc(p.visual)}</p>` : ''}
+            ${p.notes ? `<p style="margin-top:8px"><span class="fc-muted" style="text-transform:uppercase;font-size:11px;letter-spacing:.05em">Notes (internal)</span><br>${esc(p.notes)}</p>` : ''}
+          </div>`;
+        dlg.showModal();
+        dlg.querySelector('#d-close').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#d-edit').addEventListener('click', () => { dlg.close(); openEdit(p); });
+      }
+
+      function openEdit(p) {
+        const dlg = main.querySelector('#dlg');
+        const plats = (p && p.platforms) || [];
+        dlg.innerHTML = `
+          <form class="fc-dialog-body" id="pform">
+            <h2 style="margin-top:0">${p ? 'Edit' : 'New'} post</h2>
+            <div class="fc-row">
+              <label class="fc-field" style="max-width:90px"><span>Order</span><input type="number" name="post_order" value="${esc(p?.post_order)}" /></label>
+              <label class="fc-field"><span>Title</span><input name="title" value="${esc(p?.title)}" /></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Status</span><select name="status">${STATUSES.map((s) => `<option ${p?.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></label>
+              <label class="fc-field"><span>Date</span><input type="date" name="post_date" value="${esc(p?.post_date)}" /></label>
+              <label class="fc-field"><span>Pillar</span><select name="pillar"><option value="">—</option>${PILLARS.map((pl) => `<option ${p?.pillar === pl ? 'selected' : ''}>${pl}</option>`).join('')}</select></label>
+            </div>
+            <div class="fc-field"><span>Platforms</span><div style="display:flex;gap:16px;flex-wrap:wrap">${PLATFORMS.map(([v, l]) => `<label class="fc-check"><input type="checkbox" name="plat" value="${v}" ${plats.includes(v) ? 'checked' : ''}/> ${l}</label>`).join('')}</div></div>
+            <label class="fc-field"><span>Copy</span><textarea name="copy" style="min-height:160px">${esc(p?.copy)}</textarea></label>
+            <label class="fc-field"><span>Visual (internal)</span><input name="visual" value="${esc(p?.visual)}" /></label>
+            <label class="fc-field"><span>Notes (internal)</span><textarea name="notes">${esc(p?.notes)}</textarea></label>
+            <div class="fc-row" style="margin-top:6px">
+              ${p ? '<button type="button" class="fc-btn fc-btn--danger" id="p-del">Delete</button>' : ''}
+              <button type="button" class="fc-btn fc-btn--ghost" id="p-cancel">Cancel</button>
+              <button type="submit" class="fc-btn fc-btn--primary">Save</button>
+            </div>
+          </form>`;
+        dlg.showModal();
+        dlg.querySelector('#p-cancel').addEventListener('click', () => dlg.close());
+        if (p) dlg.querySelector('#p-del').addEventListener('click', async () => {
+          if (!confirm('Delete this post?')) return;
+          await table('social_posts').delete().eq('id', p.id);
+          posts = posts.filter((x) => x.id !== p.id); dlg.close(); shell();
+        });
+        dlg.querySelector('#pform').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const f = new FormData(e.target);
+          const payload = {
+            post_order: f.get('post_order') ? Number(f.get('post_order')) : null,
+            title: f.get('title') || null,
+            status: f.get('status'),
+            post_date: f.get('post_date') || null,
+            pillar: f.get('pillar') || null,
+            platforms: f.getAll('plat'),
+            copy: f.get('copy') || null,
+            visual: f.get('visual') || null,
+            notes: f.get('notes') || null,
+          };
+          if (p) { const { error } = await table('social_posts').update(payload).eq('id', p.id); if (error) { toast(error.message, 'err'); return; } }
+          else { const { error } = await table('social_posts').insert(payload); if (error) { toast(error.message, 'err'); return; } }
+          posts = (await table('social_posts').select('*').order('post_order', { nullsFirst: false })).data || [];
+          dlg.close(); shell();
+        });
+      }
+
+      shell();
+    }});
+  </script>
+</body>
+</html>

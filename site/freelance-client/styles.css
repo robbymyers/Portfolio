@@ -41,28 +41,35 @@ body {
 a { color: var(--fc-accent-strong); }
 h1, h2, h3 { font-family: var(--fc-head); font-weight: 500; letter-spacing: 0.01em; }
 
-/* ---------- Top bar ---------- */
-.fc-topbar {
-  position: sticky; top: 0; z-index: 20;
-  display: flex; align-items: center; gap: 24px;
-  padding: 0 24px; height: 60px;
-  background: var(--fc-card);
-  border-bottom: 1px solid var(--fc-line);
+/* ---------- Sidebar layout ---------- */
+.fc-layout { display: flex; min-height: 100vh; }
+.fc-sidebar {
+  width: 236px; flex: none;
+  background: var(--fc-card); border-right: 1px solid var(--fc-line);
+  display: flex; flex-direction: column; padding: 18px 14px;
+  position: sticky; top: 0; height: 100vh; z-index: 50;
 }
-.fc-brand { font-family: var(--fc-head); font-size: 18px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fc-ink); text-decoration: none; }
-.fc-brand span { color: var(--fc-accent); margin: 0 4px; }
-.fc-nav { display: flex; gap: 6px; margin-right: auto; }
-.fc-nav a {
-  padding: 7px 12px; border-radius: 8px; text-decoration: none;
-  color: var(--fc-ink-70); font-weight: 500; font-size: 14px;
-}
-.fc-nav a:hover { background: var(--fc-line-2); color: var(--fc-ink); }
-.fc-nav a.is-active { background: var(--fc-ink); color: white; }
-.fc-user { display: flex; align-items: center; gap: 12px; }
-.fc-user-email { font-size: 13px; color: var(--fc-ink-50); }
+.fc-shell { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fc-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; padding: 4px 8px 16px; }
+.fc-brand-mark { width: 32px; height: 32px; flex: none; border-radius: 9px; background: var(--fc-accent); color: #fff; font-family: var(--fc-head); font-size: 14px; display: grid; place-items: center; }
+.fc-brand-text { font-family: var(--fc-head); font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fc-ink); line-height: 1.1; }
+.fc-brand-text b { display: block; color: var(--fc-accent); font-weight: 500; }
+.fc-nav { display: flex; flex-direction: column; gap: 3px; }
+.fc-navlink { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; text-decoration: none; color: var(--fc-ink-70); font-weight: 600; font-size: 14.5px; }
+.fc-navlink svg { width: 19px; height: 19px; flex: none; }
+.fc-navlink:hover { background: var(--fc-line-2); color: var(--fc-ink); }
+.fc-navlink.is-active { background: var(--fc-ink); color: #fff; }
+.fc-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--fc-line); }
+.fc-user-email { font-size: 12.5px; color: var(--fc-ink-50); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; }
+.fc-mobilebar { display: none; }
+.fc-scrim { display: none; }
+.fc-brand-m { font-family: var(--fc-head); font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fc-ink); text-decoration: none; }
+.fc-brand-m span { color: var(--fc-accent); margin: 0 3px; }
+.fc-hamburger { width: 36px; height: 36px; display: flex; flex-direction: column; justify-content: center; gap: 4px; background: none; border: none; cursor: pointer; padding: 7px; }
+.fc-hamburger span { height: 2px; background: var(--fc-ink); border-radius: 2px; }
 
 /* ---------- Layout ---------- */
-.fc-main { max-width: 1100px; margin: 0 auto; padding: 28px 24px 80px; }
+.fc-main { max-width: 1100px; margin: 0 auto; padding: 28px 32px 80px; width: 100%; }
 .fc-page-head { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
 .fc-page-head h1 { font-size: 30px; margin: 0; text-transform: uppercase; }
 .fc-page-head .fc-spacer { margin-left: auto; }
@@ -136,6 +143,16 @@ textarea { resize: vertical; min-height: 72px; }
 .fc-badge--c-prospect { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
 .fc-badge--c-active   { background: var(--fc-ink); color: white; }
 .fc-badge--c-past     { background: var(--fc-gray-tint); color: var(--fc-gray-ink); }
+/* social post status */
+.fc-badge--s-idea     { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
+.fc-badge--s-drafting { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
+.fc-badge--s-ready    { background: var(--fc-ink); color: white; }
+.fc-badge--s-posted   { background: var(--color-green); color: white; }
+/* hopper task status */
+.fc-badge--t-todo        { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
+.fc-badge--t-in_progress { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
+.fc-badge--t-waiting     { background: var(--fc-ink); color: white; }
+.fc-badge--t-done        { background: var(--color-green); color: white; }
 
 /* ---------- Calendar post-type palette (distinct hues per the reference deliverable) ---------- */
 :root {
@@ -271,18 +288,19 @@ textarea { resize: vertical; min-height: 72px; }
   .cal-focus-bar { grid-template-columns: 1fr; }
 }
 
-/* ---------- Mobile ---------- */
+/* ---------- Mobile: sidebar becomes a drawer ---------- */
+@media (max-width: 860px) {
+  .fc-sidebar {
+    position: fixed; left: 0; top: 0; height: 100vh; width: 264px;
+    transform: translateX(-100%); transition: transform 0.25s ease; box-shadow: var(--fc-shadow);
+  }
+  .fc-sidebar.is-open { transform: none; }
+  .fc-scrim.is-open { display: block; position: fixed; inset: 0; background: color-mix(in srgb, var(--color-black) 45%, transparent); z-index: 45; }
+  .fc-mobilebar { display: flex; align-items: center; gap: 12px; height: 54px; padding: 0 12px; background: var(--fc-card); border-bottom: 1px solid var(--fc-line); position: sticky; top: 0; z-index: 20; }
+  .fc-main { max-width: none; padding: 22px 18px 72px; }
+}
 @media (max-width: 760px) {
   .fc-main { padding: 20px 16px 64px; }
-
-  /* Top bar wraps to two lines: brand + sign-out, then a scrollable nav row. */
-  .fc-topbar { flex-wrap: wrap; height: auto; min-height: 54px; padding: 9px 14px; gap: 8px 10px; }
-  .fc-brand { font-size: 15px; }
-  .fc-nav { order: 3; width: 100%; margin: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .fc-nav::-webkit-scrollbar { display: none; }
-  .fc-nav a { white-space: nowrap; }
-  .fc-user { margin-left: auto; }
-  .fc-user-email { display: none; }
 
   /* Page header: title, then actions wrap below instead of overflowing. */
   .fc-page-head { flex-wrap: wrap; gap: 10px; }

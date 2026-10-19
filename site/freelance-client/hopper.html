@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>The Hopper · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc, fmtDate, todayISO, parseDate } from './app.js';
+
+    const STATUSES = [['todo', 'To do'], ['in_progress', 'In progress'], ['waiting', 'Waiting'], ['done', 'Done']];
+    const label = (s) => (STATUSES.find((x) => x[0] === s) || [, s])[1];
+    const badge = (s) => `<span class="fc-badge fc-badge--t-${s}">${label(s)}</span>`;
+
+    mountApp({ active: 'hopper', render: async (main) => {
+      let [tasks, clients] = await Promise.all([
+        table('hopper_tasks').select('*').is('archived_at', null).order('created_at', { ascending: false }).then((r) => r.data || []),
+        table('clients').select('id,name,business_name').order('name').then((r) => r.data || []),
+      ]);
+      const clientName = (id) => { const c = clients.find((x) => x.id === id); return c ? (c.business_name || c.name) : ''; };
+
+      let filter = 'all';
+      const filtered = () => filter === 'all' ? tasks : tasks.filter((t) => t.status === filter);
+
+      function shell() {
+        main.innerHTML = `
+          <div class="fc-page-head" style="flex-wrap:wrap;gap:10px">
+            <h1>The Hopper</h1>
+            <div class="fc-spacer"></div>
+            <button class="fc-btn fc-btn--primary" id="new-task">+ New task</button>
+          </div>
+          <div class="fc-list-head" style="flex-wrap:wrap;gap:8px">
+            ${['all', ...STATUSES.map((s) => s[0])].map((s) => {
+              const n = s === 'all' ? tasks.length : tasks.filter((t) => t.status === s).length;
+              return `<button class="fc-chip ${s === filter ? 'is-on' : ''}" data-filter="${s}">${s === 'all' ? 'All' : label(s)} ${n}</button>`;
+            }).join('')}
+          </div>
+          <div id="list"></div>
+          <dialog id="dlg" class="fc-dialog"></dialog>`;
+        main.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { filter = b.dataset.filter; shell(); }));
+        main.querySelector('#new-task').addEventListener('click', () => openEdit(null));
+        renderList();
+      }
+
+      function renderList() {
+        const list = filtered().slice().sort((a, b) => {
+          const ad = a.due_date || '9999', bd = b.due_date || '9999';
+          return ad.localeCompare(bd);
+        });
+        const box = main.querySelector('#list');
+        if (!list.length) { box.innerHTML = '<div class="fc-card fc-empty">Nothing here yet. Add a task to get started.</div>'; return; }
+        const today = todayISO();
+        box.innerHTML = `<div class="fc-card" style="padding:0"><table class="fc-table"><tbody>${list.map((t) => {
+          const overdue = t.due_date && t.status !== 'done' && parseDate(t.due_date) < parseDate(today);
+          return `<tr class="fc-rowlink" data-id="${t.id}">
+            <td style="width:30px"><input type="checkbox" class="t-done" data-id="${t.id}" ${t.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" style="width:auto"/></td>
+            <td><b style="${t.status === 'done' ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.title)}</b>${t.description ? `<div class="fc-muted" style="font-size:13px">${esc(t.description).slice(0, 90)}</div>` : ''}</td>
+            <td class="fc-muted">${t.client_id ? esc(clientName(t.client_id)) : ''}</td>
+            <td class="${overdue ? '' : 'fc-muted'}" style="${overdue ? 'color:var(--fc-accent-strong);font-weight:600' : ''}">${t.due_date ? fmtDate(t.due_date, { month: 'short', day: 'numeric' }) : ''}</td>
+            <td>${badge(t.status)}</td>
+          </tr>`;
+        }).join('')}</tbody></table></div>`;
+        box.querySelectorAll('.t-done').forEach((cb) => cb.addEventListener('change', async () => {
+          const t = tasks.find((x) => x.id === cb.dataset.id);
+          t.status = cb.checked ? 'done' : 'todo';
+          await table('hopper_tasks').update({ status: t.status }).eq('id', t.id);
+          shell();
+        }));
+        box.querySelectorAll('.fc-rowlink').forEach((tr) => tr.addEventListener('click', () => openEdit(tasks.find((x) => x.id === tr.dataset.id))));
+      }
+
+      function openEdit(t) {
+        const dlg = main.querySelector('#dlg');
+        dlg.innerHTML = `
+          <form class="fc-dialog-body" id="tform">
+            <h2 style="margin-top:0">${t ? 'Edit' : 'New'} task</h2>
+            <label class="fc-field"><span>Title *</span><input name="title" id="t-title" value="${esc(t?.title)}" /></label>
+            <label class="fc-field"><span>Description</span><textarea name="description">${esc(t?.description)}</textarea></label>
+            <div class="fc-row">
+              <label class="fc-field"><span>Status</span><select name="status">${STATUSES.map(([v, l]) => `<option value="${v}" ${t?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+              <label class="fc-field"><span>Due date</span><input type="date" name="due_date" value="${esc(t?.due_date)}" /></label>
+              <label class="fc-field"><span>Client (optional)</span><select name="client_id"><option value="">—</option>${clients.map((c) => `<option value="${c.id}" ${t?.client_id === c.id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select></label>
+            </div>
+            <div class="fc-row" style="margin-top:6px">
+              ${t ? '<button type="button" class="fc-btn fc-btn--danger" id="t-del">Delete</button>' : ''}
+              ${t ? '<button type="button" class="fc-btn fc-btn--ghost" id="t-arch">Archive</button>' : ''}
+              <button type="button" class="fc-btn fc-btn--ghost" id="t-cancel">Cancel</button>
+              <button type="submit" class="fc-btn fc-btn--primary">Save</button>
+            </div>
+          </form>`;
+        dlg.showModal();
+        dlg.querySelector('#t-cancel').addEventListener('click', () => dlg.close());
+        if (t) {
+          dlg.querySelector('#t-del').addEventListener('click', async () => {
+            if (!confirm('Delete this task?')) return;
+            await table('hopper_tasks').delete().eq('id', t.id);
+            tasks = tasks.filter((x) => x.id !== t.id); dlg.close(); shell();
+          });
+          dlg.querySelector('#t-arch').addEventListener('click', async () => {
+            await table('hopper_tasks').update({ archived_at: new Date().toISOString() }).eq('id', t.id);
+            tasks = tasks.filter((x) => x.id !== t.id); dlg.close(); shell();
+          });
+        }
+        dlg.querySelector('#tform').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const f = new FormData(e.target);
+          const title = (f.get('title') || '').trim();
+          if (!title) { dlg.querySelector('#t-title').focus(); toast('Title is required', 'err'); return; }
+          const payload = { title, description: f.get('description') || null, status: f.get('status'), due_date: f.get('due_date') || null, client_id: f.get('client_id') || null };
+          if (t) { const { error } = await table('hopper_tasks').update(payload).eq('id', t.id); if (error) { toast(error.message, 'err'); return; } }
+          else { const { error } = await table('hopper_tasks').insert(payload); if (error) { toast(error.message, 'err'); return; } }
+          tasks = (await table('hopper_tasks').select('*').is('archived_at', null).order('created_at', { ascending: false })).data || [];
+          dlg.close(); shell();
+        });
+      }
+
+      shell();
+    }});
+  </script>
+</body>
+</html>
