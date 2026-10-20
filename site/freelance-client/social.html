@@ -64,6 +64,54 @@
           v.querySelector('#today').addEventListener('click', () => { const t = new Date(); viewMonth = new Date(t.getFullYear(), t.getMonth(), 1); paint(); });
         }
         v.querySelectorAll('[data-post]').forEach((el) => el.addEventListener('click', () => openDetail(el.dataset.post)));
+        if (view === 'calendar') wireCalendarDnD(v); else wireListDnD(v);
+      }
+
+      // --- Drag + drop ---------------------------------------------------
+      let dragId = null;
+      function wireCalendarDnD(v) {
+        v.querySelectorAll('.cal-post[draggable]').forEach((el) => {
+          el.addEventListener('dragstart', (e) => { dragId = el.dataset.post; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); });
+        });
+        v.querySelectorAll('td[data-date]').forEach((td) => {
+          td.addEventListener('dragover', (e) => { e.preventDefault(); td.classList.add('drop-hi'); });
+          td.addEventListener('dragleave', () => td.classList.remove('drop-hi'));
+          td.addEventListener('drop', (e) => { e.preventDefault(); td.classList.remove('drop-hi'); if (!dragId) return; const id = dragId; dragId = null; reschedule(id, td.dataset.date); });
+        });
+      }
+      async function reschedule(id, dateISO) {
+        const p = posts.find((x) => x.id === id);
+        if (!p || p.post_date === dateISO) return;
+        p.post_date = dateISO;
+        paint();
+        const { error } = await table('social_posts').update({ post_date: dateISO }).eq('id', id);
+        if (error) toast(error.message, 'err');
+      }
+      function wireListDnD(v) {
+        let rowId = null;
+        v.querySelectorAll('tr[draggable]').forEach((tr) => {
+          tr.addEventListener('dragstart', (e) => { rowId = tr.dataset.post; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', rowId); });
+          tr.addEventListener('dragend', () => { tr.classList.remove('dragging'); v.querySelectorAll('.drop-above,.drop-below').forEach((x) => x.classList.remove('drop-above', 'drop-below')); });
+          tr.addEventListener('dragover', (e) => { e.preventDefault(); const r = tr.getBoundingClientRect(); const below = e.clientY > r.top + r.height / 2; tr.classList.toggle('drop-below', below); tr.classList.toggle('drop-above', !below); });
+          tr.addEventListener('dragleave', () => tr.classList.remove('drop-above', 'drop-below'));
+          tr.addEventListener('drop', (e) => { e.preventDefault(); const below = tr.classList.contains('drop-below'); tr.classList.remove('drop-above', 'drop-below'); const tid = tr.dataset.post; if (!rowId || rowId === tid) { rowId = null; return; } const id = rowId; rowId = null; reorder(id, tid, below); });
+        });
+      }
+      async function reorder(id, targetId, below) {
+        const a = posts.find((p) => p.id === id), b = posts.find((p) => p.id === targetId);
+        if (!a || !b || (!!a.post_date) !== (!!b.post_date)) return; // reorder within a section only
+        const ordered = posts.slice().sort((x, y) => (x.post_order ?? 1e9) - (y.post_order ?? 1e9));
+        const from = ordered.findIndex((p) => p.id === id);
+        const [moved] = ordered.splice(from, 1);
+        let to = ordered.findIndex((p) => p.id === targetId);
+        if (below) to += 1;
+        ordered.splice(to, 0, moved);
+        const changed = [];
+        ordered.forEach((p, i) => { if (p.post_order !== i + 1) { p.post_order = i + 1; changed.push(p); } });
+        paint();
+        const results = await Promise.all(changed.map((p) => table('social_posts').update({ post_order: p.post_order }).eq('id', p.id)));
+        const err = results.find((r) => r.error);
+        if (err) toast(err.error.message, 'err');
       }
 
       function calendarHTML() {
@@ -76,8 +124,8 @@
         for (let d = 1; d <= days; d++) {
           const iso = `${y}-${String(mo + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           let inner = `<div class="daynum">${d}</div>`;
-          (byDate[iso] || []).forEach((p) => { inner += `<span class="cal-post ${pillarClass(p.pillar)}" data-post="${p.id}" style="cursor:pointer">${esc(p.title) || 'Untitled'}</span>`; });
-          cells += `<td>${inner}</td>`;
+          (byDate[iso] || []).forEach((p) => { inner += `<span class="cal-post ${pillarClass(p.pillar)}" draggable="true" data-post="${p.id}">${esc(p.title) || 'Untitled'}</span>`; });
+          cells += `<td data-date="${iso}">${inner}</td>`;
           if ((first + d) % 7 === 0) cells += '</tr><tr>';
         }
         return `
@@ -95,10 +143,11 @@
 
       function listHTML() {
         const list = filtered();
-        const scheduled = list.filter((p) => p.post_date).sort((a, b) => a.post_date.localeCompare(b.post_date));
-        const backlog = list.filter((p) => !p.post_date).sort((a, b) => (a.post_order || 0) - (b.post_order || 0));
+        const byOrder = (a, b) => (a.post_order ?? 1e9) - (b.post_order ?? 1e9);
+        const scheduled = list.filter((p) => p.post_date).sort(byOrder);
+        const backlog = list.filter((p) => !p.post_date).sort(byOrder);
         const row = (p) => `
-          <tr class="fc-rowlink" data-post="${p.id}">
+          <tr class="fc-rowlink" draggable="true" data-post="${p.id}">
             <td class="fc-muted">${p.post_order ?? ''}</td>
             <td><b>${esc(p.title) || 'Untitled'}</b>${p.pillar ? ` <span class="fc-badge ${pillarClass(p.pillar)}" style="border:none">${esc(p.pillar)}</span>` : ''}</td>
             <td class="fc-muted">${platLabel(p.platforms)}</td>

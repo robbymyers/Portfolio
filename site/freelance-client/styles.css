@@ -257,6 +257,15 @@ textarea { resize: vertical; min-height: 72px; }
 .cal-grid .cal-entry { display: block; font-size: 11px; color: var(--fc-ink-50); font-style: italic; margin-top: 3px; }
 .cal-grid td.out { background: var(--fc-line-2); }
 
+/* drag + drop */
+.cal-post[draggable="true"] { cursor: grab; }
+.cal-post[draggable="true"]:active { cursor: grabbing; }
+.cal-grid td.drop-hi { outline: 2px dashed var(--fc-accent); outline-offset: -2px; background: var(--fc-accent-tint); }
+.fc-table tr[draggable="true"] { cursor: grab; }
+.fc-table tr.dragging { opacity: 0.4; }
+.fc-table tr.drop-above td { box-shadow: inset 0 2px 0 var(--fc-accent); }
+.fc-table tr.drop-below td { box-shadow: inset 0 -2px 0 var(--fc-accent); }
+
 /* focus bar under each month */
 .cal-focus-bar { background: var(--fc-card); border: 1px solid var(--fc-line); border-radius: 14px; padding: 16px 20px; margin-top: 14px; display: grid; grid-template-columns: 160px 1fr; gap: 10px 20px; align-items: start; }
 .cal-focus-bar b { font-size: 15px; }
