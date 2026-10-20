@@ -188,7 +188,8 @@
         const plats = (p && p.platforms) || [];
         dlg.innerHTML = `
           <form class="fc-dialog-body" id="pform">
-            <h2 style="margin-top:0">${p ? 'Edit' : 'New'} post</h2>
+            <button type="button" class="fc-dialog-x" id="p-x" aria-label="Close">&times;</button>
+            <h2 style="margin:0 0 14px">${p ? 'Edit' : 'New'} post</h2>
             <div class="fc-row">
               <label class="fc-field" style="max-width:90px"><span>Order</span><input type="number" name="post_order" value="${esc(p?.post_order)}" /></label>
               <label class="fc-field"><span>Title</span><input name="title" value="${esc(p?.title)}" /></label>
@@ -205,19 +206,25 @@
             <div class="fc-row" style="margin-top:6px">
               ${p ? '<button type="button" class="fc-btn fc-btn--danger" id="p-del">Delete</button>' : ''}
               <button type="button" class="fc-btn fc-btn--ghost" id="p-cancel">Cancel</button>
-              <button type="submit" class="fc-btn fc-btn--primary">Save</button>
+              <button type="button" class="fc-btn fc-btn--primary" id="p-save">Save</button>
             </div>
           </form>`;
         dlg.showModal();
+        dlg.querySelector('#p-x').addEventListener('click', () => dlg.close());
         dlg.querySelector('#p-cancel').addEventListener('click', () => dlg.close());
         if (p) dlg.querySelector('#p-del').addEventListener('click', async () => {
           if (!confirm('Delete this post?')) return;
-          await table('social_posts').delete().eq('id', p.id);
-          posts = posts.filter((x) => x.id !== p.id); dlg.close(); shell();
+          try {
+            const { error } = await table('social_posts').delete().eq('id', p.id);
+            if (error) throw error;
+            posts = posts.filter((x) => x.id !== p.id);
+            toast('Post deleted'); dlg.close(); shell();
+          } catch (err) { toast(err.message || 'Delete failed', 'err'); }
         });
-        dlg.querySelector('#pform').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const f = new FormData(e.target);
+
+        const save = dlg.querySelector('#p-save');
+        save.addEventListener('click', async () => {
+          const f = new FormData(dlg.querySelector('#pform'));
           const payload = {
             post_order: f.get('post_order') ? Number(f.get('post_order')) : null,
             title: f.get('title') || null,
@@ -229,10 +236,23 @@
             visual: f.get('visual') || null,
             notes: f.get('notes') || null,
           };
-          if (p) { const { error } = await table('social_posts').update(payload).eq('id', p.id); if (error) { toast(error.message, 'err'); return; } }
-          else { const { error } = await table('social_posts').insert(payload); if (error) { toast(error.message, 'err'); return; } }
-          posts = (await table('social_posts').select('*').order('post_order', { nullsFirst: false })).data || [];
-          dlg.close(); shell();
+          save.disabled = true; save.textContent = 'Saving…';
+          try {
+            if (p) {
+              const { error } = await table('social_posts').update(payload).eq('id', p.id);
+              if (error) throw error;
+              Object.assign(p, payload);
+            } else {
+              const { data, error } = await table('social_posts').insert(payload).select().single();
+              if (error) throw error;
+              posts.push(data);
+            }
+            toast(p ? 'Post saved' : 'Post added');
+            dlg.close(); shell();
+          } catch (err) {
+            toast(err.message || 'Save failed', 'err');
+            save.disabled = false; save.textContent = 'Save';
+          }
         });
       }
 

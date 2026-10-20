@@ -330,7 +330,9 @@ textarea { resize: vertical; min-height: 72px; }
 /* ---------- Dialog ---------- */
 .fc-dialog { border: none; border-radius: 16px; padding: 0; width: 92%; max-width: 560px; margin: auto; inset: 0; height: fit-content; max-height: 90vh; overflow: auto; box-shadow: var(--fc-shadow); }
 .fc-dialog::backdrop { background: color-mix(in srgb, var(--color-black) 45%, transparent); }
-.fc-dialog-body { padding: 24px; }
+.fc-dialog-body { padding: 24px; position: relative; }
+.fc-dialog-x { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; border: none; background: none; font-size: 24px; line-height: 1; color: var(--fc-ink-50); cursor: pointer; border-radius: 7px; display: grid; place-items: center; }
+.fc-dialog-x:hover { background: var(--fc-line-2); color: var(--fc-ink); }
 .fc-check { display: flex; align-items: center; gap: 9px; padding: 7px 0; font-size: 14px; }
 .fc-check input { width: auto; }
 .fc-section { margin-top: 30px; }
