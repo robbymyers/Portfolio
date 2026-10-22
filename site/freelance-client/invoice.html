@@ -66,7 +66,12 @@
 
           <div class="fc-card">
             <div class="fc-row">
-              <label class="fc-field"><span>Client</span><select id="f-client">${clients.map((c) => `<option value="${c.id}" ${c.id === inv.client_id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select></label>
+              <label class="fc-field"><span>Client</span>
+                <div style="display:flex;gap:8px">
+                  <select id="f-client" style="flex:1">${clients.map((c) => `<option value="${c.id}" ${c.id === inv.client_id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select>
+                  <button type="button" class="fc-btn fc-btn--ghost" id="new-client-btn" style="flex:none">+ New</button>
+                </div>
+              </label>
               <label class="fc-field"><span>Engagement (optional)</span><select id="f-eng"></select></label>
             </div>
             <div class="fc-row">
@@ -100,7 +105,8 @@
           </div>` : ''}
         </div>
         ${printDoc()}
-        <dialog id="pay-dlg" class="fc-dialog"></dialog>`;
+        <dialog id="pay-dlg" class="fc-dialog"></dialog>
+        <dialog id="newclient-dlg" class="fc-dialog"></dialog>`;
 
         renderEngOptions(); renderItems(); wire();
       }
@@ -197,6 +203,7 @@
 
         const mp = main.querySelector('#mark-paid');
         if (mp) mp.addEventListener('click', openPaid);
+        main.querySelector('#new-client-btn').addEventListener('click', openNewClient);
 
         const copy = main.querySelector('#copy-sentry');
         if (copy) copy.addEventListener('click', () => {
@@ -205,6 +212,51 @@
         });
         const chk = main.querySelector('#sentry-logged');
         if (chk) chk.addEventListener('change', async (e) => { inv.sentry_logged = e.target.checked; await table('invoices').update({ sentry_logged: inv.sentry_logged }).eq('id', iid); if (inv.sentry_logged) render(); });
+      }
+
+      function openNewClient() {
+        collect();
+        const dlg = main.querySelector('#newclient-dlg');
+        dlg.innerHTML = `
+          <form class="fc-dialog-body" id="ncform">
+            <button type="button" class="fc-dialog-x" id="nc-x" aria-label="Close">&times;</button>
+            <h2 style="margin:0 0 14px">New client</h2>
+            <div class="fc-row">
+              <label class="fc-field"><span>Name *</span><input name="name" id="nc-name" /></label>
+              <label class="fc-field"><span>Business</span><input name="business_name" /></label>
+            </div>
+            <div class="fc-row">
+              <label class="fc-field"><span>Email</span><input name="email" type="email" /></label>
+              <label class="fc-field"><span>Phone</span><input name="phone" /></label>
+            </div>
+            <label class="fc-field"><span>Status</span><select name="status">${['prospect', 'active', 'past'].map((s) => `<option>${s}</option>`).join('')}</select></label>
+            <div class="fc-row" style="margin-top:6px">
+              <button type="button" class="fc-btn fc-btn--ghost" id="nc-cancel">Cancel</button>
+              <button type="button" class="fc-btn fc-btn--primary" id="nc-save">Add client</button>
+            </div>
+          </form>`;
+        dlg.showModal();
+        dlg.querySelector('#nc-x').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#nc-cancel').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#nc-save').addEventListener('click', async () => {
+          const f = new FormData(dlg.querySelector('#ncform'));
+          const name = (f.get('name') || '').trim();
+          if (!name) { dlg.querySelector('#nc-name').focus(); toast('Name is required', 'err'); return; }
+          const payload = { name, business_name: f.get('business_name') || null, email: f.get('email') || null, phone: f.get('phone') || null, status: f.get('status') };
+          const btn = dlg.querySelector('#nc-save'); btn.disabled = true; btn.textContent = 'Adding…';
+          try {
+            const { data, error } = await table('clients').insert(payload).select('id,name,business_name').single();
+            if (error) throw error;
+            clients.push(data);
+            clients.sort((a, b) => a.name.localeCompare(b.name));
+            inv.client_id = data.id;
+            inv.engagement_id = null;
+            await loadEngagements(inv.client_id);
+            toast('Client added');
+            dlg.close();
+            render();
+          } catch (err) { toast(err.message || 'Failed to add client', 'err'); btn.disabled = false; btn.textContent = 'Add client'; }
+        });
       }
 
       function openPaid() {

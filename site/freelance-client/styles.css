@@ -196,6 +196,9 @@ textarea { resize: vertical; min-height: 72px; }
 .fc-toast { background: var(--fc-ink); color: white; padding: 10px 16px; border-radius: 10px; font-size: 14px; box-shadow: var(--fc-shadow); transition: opacity 0.3s, transform 0.3s; }
 .fc-toast--err { background: var(--fc-accent-strong); }
 .fc-toast.out { opacity: 0; transform: translateY(8px); }
+/* toast shown above modals — via Popover API (--pop) or inside the open dialog (--float) */
+.fc-toast--pop, .fc-toast--float { position: fixed; inset: auto; bottom: 22px; left: 50%; transform: translateX(-50%); margin: 0; border: none; }
+.fc-toast--pop.out, .fc-toast--float.out { transform: translateX(-50%) translateY(8px); }
 
 /* =====================================================================
    PRINT — one clean page, no app chrome. Used by quote/invoice/calendar.

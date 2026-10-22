@@ -64,13 +64,29 @@ export function qs(name) {
 }
 
 export function toast(msg, kind = 'ok') {
-  let box = $('#fc-toast');
-  if (!box) { box = document.createElement('div'); box.id = 'fc-toast'; document.body.appendChild(box); }
   const t = document.createElement('div');
   t.className = `fc-toast fc-toast--${kind}`;
   t.textContent = msg;
-  box.appendChild(t);
-  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 2600);
+  // A modal <dialog> renders in the top layer and would cover a normally-stacked
+  // toast. If one is open, append the toast INSIDE it (same top-layer subtree) so
+  // the message is visible; when that dialog closes, move the toast to the body so
+  // a "saved" confirmation still shows after the dialog is dismissed.
+  const openDialog = document.querySelector('dialog[open]');
+  if (openDialog) {
+    t.classList.add('fc-toast--float');
+    openDialog.appendChild(t);
+    openDialog.addEventListener('close', () => {
+      if (t.isConnected) { t.classList.remove('fc-toast--float'); ensureToastBox().appendChild(t); }
+    }, { once: true });
+  } else {
+    ensureToastBox().appendChild(t);
+  }
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300); }, 2800);
+}
+function ensureToastBox() {
+  let box = document.getElementById('fc-toast');
+  if (!box) { box = document.createElement('div'); box.id = 'fc-toast'; document.body.appendChild(box); }
+  return box;
 }
 
 // Status badges — classes defined in styles.css (fills vs. outlines, no color-only).
