@@ -18,6 +18,27 @@ export function money(n) {
   return v.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 }
 
+// Light formatting for free-text (Terms / Notes) in printed docs.
+// - a short line (<=32 chars, <=4 words, no trailing punctuation) that sits on
+//   its own after a blank line, with content under it, becomes a bold header
+// - **bold** and *italic* work inline
+// Output is safe HTML (text is escaped; only known tags are added).
+export function formatDoc(raw) {
+  if (!raw) return '';
+  const inline = (s) => esc(s)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+?)\*/g, '<em>$1</em>');
+  const lines = String(raw).split('\n');
+  return lines.map((line, i) => {
+    const t = line.trim();
+    const next = (lines[i + 1] || '').trim();
+    const prev = (lines[i - 1] || '').trim();
+    const isHeader = t.length > 0 && t.length <= 32 && t.split(/\s+/).length <= 4
+      && !/[.,;:!?]$/.test(t) && next.length > 0 && prev.length === 0;
+    return isHeader ? `<b class="doc-sec">${inline(t)}</b>` : inline(line);
+  }).join('\n');
+}
+
 // Timezone-safe: parse a 'YYYY-MM-DD' column as LOCAL midnight, never UTC.
 export function parseDate(d) {
   if (!d) return null;

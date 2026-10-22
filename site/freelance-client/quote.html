@@ -12,7 +12,7 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { mountApp, table, toast, esc, qs, money, fmtDate, todayISO, quoteBadge, confirmAction } from './app.js';
+    import { mountApp, table, toast, esc, qs, money, fmtDate, todayISO, quoteBadge, confirmAction, formatDoc } from './app.js';
     import { nextNumber } from './db.js';
 
     mountApp({ active: 'clients', render: async (main) => {
@@ -150,8 +150,8 @@
           <div class="doc-total">Total <span>${money(total())}</span></div>
           <div class="doc-foot">
             ${s.payment_instructions ? `<h3>Payment</h3><p>${esc(s.payment_instructions)}</p>` : ''}
-            ${quote.terms ? `<h3>Terms</h3><p>${esc(quote.terms)}</p>` : ''}
-            ${quote.notes ? `<p>${esc(quote.notes)}</p>` : ''}
+            ${quote.terms ? `<h3>Terms</h3><p>${formatDoc(quote.terms)}</p>` : ''}
+            ${quote.notes ? `<p>${formatDoc(quote.notes)}</p>` : ''}
             ${s.footer_text ? `<p style="margin-top:14px">${esc(s.footer_text)}</p>` : ''}
           </div>
         </div></div>`;

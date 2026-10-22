@@ -12,7 +12,7 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { mountApp, table, toast, esc, qs, money, fmtDate, todayISO, invoiceBadge } from './app.js';
+    import { mountApp, table, toast, esc, qs, money, fmtDate, todayISO, invoiceBadge, formatDoc } from './app.js';
     import { nextNumber } from './db.js';
 
     const METHODS = ['cash', 'check', 'paypal', 'cashapp', 'other'];
@@ -160,8 +160,8 @@
           <div class="doc-total">${inv.status === 'paid' ? 'Paid' : 'Total due'} <span>${money(total())}</span></div>
           <div class="doc-foot">
             ${s.payment_instructions ? `<h3>Payment</h3><p>${esc(s.payment_instructions)}</p>` : ''}
-            ${inv.terms ? `<h3>Terms</h3><p>${esc(inv.terms)}</p>` : ''}
-            ${inv.notes ? `<p>${esc(inv.notes)}</p>` : ''}
+            ${inv.terms ? `<h3>Terms</h3><p>${formatDoc(inv.terms)}</p>` : ''}
+            ${inv.notes ? `<p>${formatDoc(inv.notes)}</p>` : ''}
             ${s.footer_text ? `<p style="margin-top:14px">${esc(s.footer_text)}</p>` : ''}
           </div>
         </div></div>`;

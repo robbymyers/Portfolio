@@ -232,6 +232,7 @@ textarea { resize: vertical; min-height: 72px; }
 .doc-foot { margin-top: 26px; font-size: 12.5px; color: var(--fc-ink-70); }
 .doc-foot h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fc-ink-50); margin: 14px 0 3px; }
 .doc-foot p { white-space: pre-wrap; margin: 4px 0; }   /* keep the line breaks typed into Terms / Notes */
+.doc-sec { font-weight: 700; color: var(--fc-ink); }    /* auto-detected section header in Terms / Notes */
 
 /* ---------- Calendar: view toggle ---------- */
 .seg { display: inline-flex; border: 1px solid var(--fc-line); border-radius: 10px; overflow: hidden; }
