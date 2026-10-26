@@ -17,6 +17,8 @@
     const STATUSES = [['todo', 'To do'], ['in_progress', 'In progress'], ['waiting', 'Waiting'], ['done', 'Done']];
     const label = (s) => (STATUSES.find((x) => x[0] === s) || [, s])[1];
     const badge = (s) => `<span class="fc-badge fc-badge--t-${s}">${label(s)}</span>`;
+    const PIN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 2a1 1 0 0 1 .117 1.993L15.5 4H15l.7 6h1.3a1 1 0 0 1 .117 1.993L17 12h-4v8a1 1 0 0 1-1.993.117L11 20v-8H7a1 1 0 0 1-.117-1.993L7 10h1.3l.7-6h-.5a1 1 0 0 1-.117-1.993L8.5 2h7Z"/></svg>';
+    const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>';
 
     mountApp({ active: 'hopper', render: async (main) => {
       let [tasks, clients] = await Promise.all([
@@ -27,6 +29,8 @@
 
       let filter = 'all';
       const filtered = () => filter === 'all' ? tasks : tasks.filter((t) => t.status === filter);
+      const dueKey = (t) => t.due_date || '9999-99-99';
+      const byOrder = (a, b) => (a.sort_order || 0) - (b.sort_order || 0) || dueKey(a).localeCompare(dueKey(b));
 
       function shell() {
         main.innerHTML = `
@@ -42,44 +46,118 @@
             }).join('')}
           </div>
           <div id="list"></div>
-          <dialog id="dlg" class="fc-dialog"></dialog>`;
+          <dialog id="dlg" class="fc-dialog"></dialog>
+          <dialog id="confirm-dlg" class="fc-dialog"></dialog>`;
         main.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { filter = b.dataset.filter; shell(); }));
         main.querySelector('#new-task').addEventListener('click', () => openEdit(null));
         renderList();
       }
 
+      function rowHTML(t) {
+        const overdue = t.due_date && t.status !== 'done' && parseDate(t.due_date) < parseDate(todayISO());
+        return `<tr class="fc-rowlink" draggable="true" data-id="${t.id}">
+          <td style="width:30px"><input type="checkbox" class="t-done" data-id="${t.id}" ${t.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" style="width:auto"/></td>
+          <td><b style="${t.status === 'done' ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.title)}</b>${t.description ? `<div class="fc-muted" style="font-size:13px">${esc(t.description).slice(0, 90)}</div>` : ''}</td>
+          <td class="fc-muted">${t.client_id ? esc(clientName(t.client_id)) : ''}</td>
+          <td class="${overdue ? '' : 'fc-muted'}" style="${overdue ? 'color:var(--fc-accent-strong);font-weight:600' : ''}">${t.due_date ? fmtDate(t.due_date, { month: 'short', day: 'numeric' }) : ''}</td>
+          <td>${badge(t.status)}</td>
+          <td class="hop-actions">
+            <button class="hop-ico ${t.pinned_at ? 'is-pinned' : ''}" data-pin="${t.id}" title="${t.pinned_at ? 'Unpin' : 'Pin to top'}">${PIN}</button>
+            <button class="hop-ico hop-ico--del" data-del="${t.id}" title="Delete">${TRASH}</button>
+          </td>
+        </tr>`;
+      }
+      const tableFor = (items) => `<div class="fc-card" style="padding:0;margin-bottom:16px"><table class="fc-table"><tbody>${items.map(rowHTML).join('')}</tbody></table></div>`;
+
       function renderList() {
-        const list = filtered().slice().sort((a, b) => {
-          const ad = a.due_date || '9999', bd = b.due_date || '9999';
-          return ad.localeCompare(bd);
-        });
+        const list = filtered();
+        const pinned = list.filter((t) => t.pinned_at).sort(byOrder);
+        const rest = list.filter((t) => !t.pinned_at).sort(byOrder);
         const box = main.querySelector('#list');
         if (!list.length) { box.innerHTML = '<div class="fc-card fc-empty">Nothing here yet. Add a task to get started.</div>'; return; }
-        const today = todayISO();
-        box.innerHTML = `<div class="fc-card" style="padding:0"><table class="fc-table"><tbody>${list.map((t) => {
-          const overdue = t.due_date && t.status !== 'done' && parseDate(t.due_date) < parseDate(today);
-          return `<tr class="fc-rowlink" data-id="${t.id}">
-            <td style="width:30px"><input type="checkbox" class="t-done" data-id="${t.id}" ${t.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" style="width:auto"/></td>
-            <td><b style="${t.status === 'done' ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.title)}</b>${t.description ? `<div class="fc-muted" style="font-size:13px">${esc(t.description).slice(0, 90)}</div>` : ''}</td>
-            <td class="fc-muted">${t.client_id ? esc(clientName(t.client_id)) : ''}</td>
-            <td class="${overdue ? '' : 'fc-muted'}" style="${overdue ? 'color:var(--fc-accent-strong);font-weight:600' : ''}">${t.due_date ? fmtDate(t.due_date, { month: 'short', day: 'numeric' }) : ''}</td>
-            <td>${badge(t.status)}</td>
-          </tr>`;
-        }).join('')}</tbody></table></div>`;
+        box.innerHTML =
+          (pinned.length ? `<div class="hop-group-label"><span class="hop-pin-mark">${PIN}</span> Pinned</div>${tableFor(pinned)}` : '')
+          + (rest.length ? tableFor(rest) : '');
+
         box.querySelectorAll('.t-done').forEach((cb) => cb.addEventListener('change', async () => {
           const t = tasks.find((x) => x.id === cb.dataset.id);
           t.status = cb.checked ? 'done' : 'todo';
-          await table('hopper_tasks').update({ status: t.status }).eq('id', t.id);
-          shell();
+          renderList();
+          const { error } = await table('hopper_tasks').update({ status: t.status }).eq('id', t.id);
+          if (error) toast(error.message, 'err');
         }));
+        box.querySelectorAll('[data-pin]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); togglePin(b.dataset.pin); }));
+        box.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); askDelete(tasks.find((x) => x.id === b.dataset.del)); }));
         box.querySelectorAll('.fc-rowlink').forEach((tr) => tr.addEventListener('click', () => openEdit(tasks.find((x) => x.id === tr.dataset.id))));
+        wireDnD(box);
+      }
+
+      async function togglePin(id) {
+        const t = tasks.find((x) => x.id === id); if (!t) return;
+        t.pinned_at = t.pinned_at ? null : new Date().toISOString();
+        renderList();
+        const { error } = await table('hopper_tasks').update({ pinned_at: t.pinned_at }).eq('id', id);
+        if (error) toast(error.message, 'err');
+      }
+
+      function askDelete(t) {
+        if (!t) return;
+        const dlg = main.querySelector('#confirm-dlg');
+        dlg.innerHTML = `<div class="fc-dialog-body">
+          <h2 style="margin:0 0 8px">Delete task?</h2>
+          <p style="margin:0 0 14px">“${esc(t.title)}” will be permanently removed.</p>
+          <div class="fc-row"><button type="button" class="fc-btn fc-btn--ghost" id="x-no">Cancel</button><button type="button" class="fc-btn fc-btn--danger" id="x-yes">Delete</button></div>
+        </div>`;
+        dlg.showModal();
+        dlg.querySelector('#x-no').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#x-yes').addEventListener('click', async () => {
+          const btn = dlg.querySelector('#x-yes'); btn.disabled = true; btn.textContent = 'Deleting…';
+          try {
+            const { error } = await table('hopper_tasks').delete().eq('id', t.id);
+            if (error) throw error;
+            tasks = tasks.filter((x) => x.id !== t.id);
+            dlg.close(); toast('Task deleted'); renderList();
+          } catch (err) { toast(err.message || 'Delete failed', 'err'); btn.disabled = false; btn.textContent = 'Delete'; }
+        });
+      }
+
+      // ---- drag to reorder (within a group: pinned or unpinned) ----
+      function wireDnD(box) {
+        let dragId = null;
+        box.querySelectorAll('tr[draggable]').forEach((tr) => {
+          tr.addEventListener('dragstart', (e) => { dragId = tr.dataset.id; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', dragId); });
+          tr.addEventListener('dragend', () => { tr.classList.remove('dragging'); box.querySelectorAll('.drop-above,.drop-below').forEach((x) => x.classList.remove('drop-above', 'drop-below')); });
+          tr.addEventListener('dragover', (e) => { e.preventDefault(); const r = tr.getBoundingClientRect(); const below = e.clientY > r.top + r.height / 2; tr.classList.toggle('drop-below', below); tr.classList.toggle('drop-above', !below); });
+          tr.addEventListener('dragleave', () => tr.classList.remove('drop-above', 'drop-below'));
+          tr.addEventListener('drop', (e) => { e.preventDefault(); const below = tr.classList.contains('drop-below'); tr.classList.remove('drop-above', 'drop-below'); const tid = tr.dataset.id; if (!dragId || dragId === tid) { dragId = null; return; } const id = dragId; dragId = null; reorder(id, tid, below); });
+        });
+      }
+      async function reorder(id, targetId, below) {
+        const a = tasks.find((t) => t.id === id), b = tasks.find((t) => t.id === targetId);
+        if (!a || !b || (!!a.pinned_at) !== (!!b.pinned_at)) return; // same group only
+        // full ordered list: pinned group first, each sorted by current order
+        const pinned = tasks.filter((t) => t.pinned_at).sort(byOrder);
+        const rest = tasks.filter((t) => !t.pinned_at).sort(byOrder);
+        const ordered = [...pinned, ...rest];
+        const from = ordered.findIndex((t) => t.id === id);
+        const [moved] = ordered.splice(from, 1);
+        let to = ordered.findIndex((t) => t.id === targetId);
+        if (below) to += 1;
+        ordered.splice(to, 0, moved);
+        const changed = [];
+        ordered.forEach((t, i) => { if (t.sort_order !== i + 1) { t.sort_order = i + 1; changed.push(t); } });
+        renderList();
+        const results = await Promise.all(changed.map((t) => table('hopper_tasks').update({ sort_order: t.sort_order }).eq('id', t.id)));
+        const err = results.find((r) => r.error);
+        if (err) toast(err.error.message, 'err');
       }
 
       function openEdit(t) {
         const dlg = main.querySelector('#dlg');
         dlg.innerHTML = `
           <form class="fc-dialog-body" id="tform">
-            <h2 style="margin-top:0">${t ? 'Edit' : 'New'} task</h2>
+            <button type="button" class="fc-dialog-x" id="t-x" aria-label="Close">&times;</button>
+            <h2 style="margin:0 0 14px">${t ? 'Edit' : 'New'} task</h2>
             <label class="fc-field"><span>Title *</span><input name="title" id="t-title" value="${esc(t?.title)}" /></label>
             <label class="fc-field"><span>Description</span><textarea name="description">${esc(t?.description)}</textarea></label>
             <div class="fc-row">
@@ -89,34 +167,35 @@
             </div>
             <div class="fc-row" style="margin-top:6px">
               ${t ? '<button type="button" class="fc-btn fc-btn--danger" id="t-del">Delete</button>' : ''}
-              ${t ? '<button type="button" class="fc-btn fc-btn--ghost" id="t-arch">Archive</button>' : ''}
               <button type="button" class="fc-btn fc-btn--ghost" id="t-cancel">Cancel</button>
-              <button type="submit" class="fc-btn fc-btn--primary">Save</button>
+              <button type="button" class="fc-btn fc-btn--primary" id="t-save">Save</button>
             </div>
           </form>`;
         dlg.showModal();
+        dlg.querySelector('#t-x').addEventListener('click', () => dlg.close());
         dlg.querySelector('#t-cancel').addEventListener('click', () => dlg.close());
-        if (t) {
-          dlg.querySelector('#t-del').addEventListener('click', async () => {
-            if (!confirm('Delete this task?')) return;
-            await table('hopper_tasks').delete().eq('id', t.id);
-            tasks = tasks.filter((x) => x.id !== t.id); dlg.close(); shell();
-          });
-          dlg.querySelector('#t-arch').addEventListener('click', async () => {
-            await table('hopper_tasks').update({ archived_at: new Date().toISOString() }).eq('id', t.id);
-            tasks = tasks.filter((x) => x.id !== t.id); dlg.close(); shell();
-          });
-        }
-        dlg.querySelector('#tform').addEventListener('submit', async (e) => {
-          e.preventDefault();
-          const f = new FormData(e.target);
+        if (t) dlg.querySelector('#t-del').addEventListener('click', () => { dlg.close(); askDelete(t); });
+
+        const save = dlg.querySelector('#t-save');
+        save.addEventListener('click', async () => {
+          const f = new FormData(dlg.querySelector('#tform'));
           const title = (f.get('title') || '').trim();
           if (!title) { dlg.querySelector('#t-title').focus(); toast('Title is required', 'err'); return; }
           const payload = { title, description: f.get('description') || null, status: f.get('status'), due_date: f.get('due_date') || null, client_id: f.get('client_id') || null };
-          if (t) { const { error } = await table('hopper_tasks').update(payload).eq('id', t.id); if (error) { toast(error.message, 'err'); return; } }
-          else { const { error } = await table('hopper_tasks').insert(payload); if (error) { toast(error.message, 'err'); return; } }
-          tasks = (await table('hopper_tasks').select('*').is('archived_at', null).order('created_at', { ascending: false })).data || [];
-          dlg.close(); shell();
+          save.disabled = true; save.textContent = 'Saving…';
+          try {
+            if (t) {
+              const { error } = await table('hopper_tasks').update(payload).eq('id', t.id);
+              if (error) throw error;
+              Object.assign(t, payload);
+            } else {
+              const { data, error } = await table('hopper_tasks').insert(payload).select().single();
+              if (error) throw error;
+              tasks.push(data);
+            }
+            toast(t ? 'Task saved' : 'Task added');
+            dlg.close(); renderList();
+          } catch (err) { toast(err.message || 'Save failed', 'err'); save.disabled = false; save.textContent = 'Save'; }
         });
       }
 

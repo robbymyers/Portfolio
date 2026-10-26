@@ -262,6 +262,18 @@ textarea { resize: vertical; min-height: 72px; }
 .cal-grid .cal-entry { display: block; font-size: 11px; color: var(--fc-ink-50); font-style: italic; margin-top: 3px; }
 .cal-grid td.out { background: var(--fc-line-2); }
 
+/* Hopper row actions (pin / trash on hover) */
+.hop-group-label { font-family: var(--fc-head); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fc-ink-50); margin: 4px 2px 8px; display: flex; align-items: center; gap: 7px; }
+.hop-pin-mark { display: inline-flex; }
+.hop-pin-mark svg { width: 13px; height: 13px; fill: var(--fc-accent); display: block; }
+.hop-actions { white-space: nowrap; text-align: right; width: 70px; }
+.hop-ico { background: none; border: none; cursor: pointer; padding: 5px; border-radius: 7px; color: var(--fc-ink-50); opacity: 0; transition: opacity 0.12s, background 0.12s, color 0.12s; }
+.hop-ico svg { width: 17px; height: 17px; display: block; }
+.fc-table tr:hover .hop-ico { opacity: 0.55; }
+.hop-ico:hover { opacity: 1 !important; background: var(--fc-line-2); color: var(--fc-ink); }
+.hop-ico.is-pinned { opacity: 1; color: var(--fc-accent); }
+.hop-ico--del:hover { color: var(--fc-accent-strong); }
+
 /* drag + drop */
 .cal-post[draggable="true"] { cursor: grab; }
 .cal-post[draggable="true"]:active { cursor: grabbing; }
