@@ -50,7 +50,7 @@ body.case-study {
 .cs-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
 .cs-pills span {
   font-family: var(--font-heading);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   border: 1px solid rgba(243, 245, 244, 0.35);
@@ -200,7 +200,7 @@ body.case-study {
 .fs-card .tag {
   display: block;
   font-family: var(--font-heading);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   margin-bottom: 10px;
@@ -395,7 +395,7 @@ body.case-study {
 .stat-card .eyebrow {
   display: block;
   font-family: var(--font-heading);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
@@ -412,7 +412,7 @@ body.case-study {
 }
 .cs-impact-bar .label {
   font-family: var(--font-heading);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent);
@@ -543,7 +543,7 @@ body.case-study {
 .ba-card .title {
   grid-column: 1 / -1;
   font-family: var(--font-heading);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--accent);
@@ -660,7 +660,7 @@ body.case-study {
 .cs-video-caption {
   text-align: center;
   font-family: var(--font-heading);
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.6;
