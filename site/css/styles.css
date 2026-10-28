@@ -6,57 +6,31 @@
 /* ---------- Fonts ---------- */
 @font-face {
   font-family: "Titling Gothic FB Wide";
-  src: url("../fonts/TitlingGothicFBWide-Reg.otf") format("opentype");
+  src: url("../fonts/TitlingGothicFBWide-Reg.woff2") format("woff2");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Titling Gothic FB Wide";
-  src: url("../fonts/TitlingGothicFBWide-Med.otf") format("opentype");
+  src: url("../fonts/TitlingGothicFBWide-Med.woff2") format("woff2");
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: "Titling Gothic FB Wide";
-  src: url("../fonts/TitlingGothicFBWide-Std.otf") format("opentype");
+  src: url("../fonts/TitlingGothicFBWide-Std.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
+/* Instrument Sans (SIL OFL), self-hosted variable font covering 400-700.
+   Replaces SF Pro Display. No 300 weight exists; 300 requests map to 400. */
 @font-face {
-  font-family: "SF Pro Display";
-  src: url("../fonts/SF-Pro-Display-Light.otf") format("opentype");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "SF Pro Display";
-  src: url("../fonts/SF-Pro-Display-Regular.otf") format("opentype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "SF Pro Display";
-  src: url("../fonts/SF-Pro-Display-Medium.otf") format("opentype");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "SF Pro Display";
-  src: url("../fonts/SF-Pro-Display-Semibold.otf") format("opentype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "SF Pro Display";
-  src: url("../fonts/SF-Pro-Display-Bold.otf") format("opentype");
-  font-weight: 700;
+  font-family: "Instrument Sans";
+  src: url("../fonts/InstrumentSans-latin.woff2") format("woff2");
+  font-weight: 400 700;
   font-style: normal;
   font-display: swap;
 }
@@ -70,7 +44,7 @@
   --color-green:   #4CAF50;
 
   --font-heading: "Titling Gothic FB Wide", sans-serif;
-  --font-body: "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
 
   --max-width: 1440px;
   --content-width: 1240px;
