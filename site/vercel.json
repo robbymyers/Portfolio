@@ -1,5 +1,11 @@
 {
   "trailingSlash": true,
+  "redirects": [
+    { "source": "/relay", "destination": "/featured", "permanent": true },
+    { "source": "/relay/:path*", "destination": "/featured", "permanent": true },
+    { "source": "/procreate", "destination": "/featured", "permanent": true },
+    { "source": "/procreate/:path*", "destination": "/featured", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/freelance-client/(.*)",
