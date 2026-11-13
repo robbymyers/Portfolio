@@ -3,43 +3,115 @@
    All color derives from --color-red / --color-black / --color-white via
    color-mix(): no new hex, no new hues. */
 
+/* ============================================================
+   DESIGN TOKENS — ported from The Furnace design system,
+   recolored to the Robby Myers brand: #FD4338 accent,
+   Titling Gothic headings, Instrument Sans body.
+   Semantic tokens below flip under [data-theme="dark"]; the
+   legacy --fc-* names alias them so every component follows.
+   ============================================================ */
 :root {
-  --fc-accent:        var(--color-red);
-  --fc-accent-strong: color-mix(in srgb, var(--color-red) 82%, black);
-  --fc-accent-tint:   color-mix(in srgb, var(--color-red) 12%, white);
-  --fc-accent-tint-2: color-mix(in srgb, var(--color-red) 26%, white);
-  --fc-accent-fg:     white;
+  --color-black: #121212;
+  --color-white: #F3F5F4;
+  --color-red:   #FD4338;
 
-  --fc-ink:     var(--color-black);
-  --fc-ink-70:  color-mix(in srgb, var(--color-black) 68%, white);
-  --fc-ink-50:  color-mix(in srgb, var(--color-black) 48%, white);
-  --fc-line:    color-mix(in srgb, var(--color-black) 14%, white);
-  --fc-line-2:  color-mix(in srgb, var(--color-black) 7%, white);
+  /* Accent + interaction states */
+  --accent:        #FD4338;
+  --accent-hover:  #ea382e;
+  --accent-active: #d33228;
+  --accent-fg:     #ffffff;
 
-  --fc-paper:   var(--color-white);
-  --fc-card:    white;
-  --fc-gray-tint: color-mix(in srgb, var(--color-black) 8%, white);
-  --fc-gray-ink:  color-mix(in srgb, var(--color-black) 52%, white);
+  /* Surfaces & ink (LIGHT) */
+  --bg:          #F3F5F4;
+  --surface:     #ffffff;
+  --surface-2:   #eceeed;
+  --ink:         #141414;
+  --ink-muted:   #5c5f5e;
+  --ink-faint:   #8a8d8c;
+  --line:        rgb(18 18 18 / 0.12);
+  --line-soft:   rgb(18 18 18 / 0.06);
+  --hover:       rgb(18 18 18 / 0.05);
+  --accent-wash: rgb(253 67 56 / 0.09);
+  --ring:        rgb(253 67 56 / 0.30);
+  --status-tint: 0.12;
+  --shadow:      0 1px 2px rgb(18 18 18 / 0.08), 0 8px 24px rgb(18 18 18 / 0.08);
 
-  --fc-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
-  --fc-head: "Titling Gothic FB Wide", var(--fc-font);
-  --fc-radius: 12px;
-  --fc-shadow: 0 1px 2px color-mix(in srgb, var(--color-black) 10%, transparent),
-               0 8px 24px color-mix(in srgb, var(--color-black) 6%, transparent);
+  /* Status hues (LIGHT) */
+  --st-neutral: #7c7f84;
+  --st-info:    #2563eb;
+  --st-warn:    #c2410c;
+  --st-success: #15803d;
+  --st-steel:   #52637a;
+
+  --radius:    10px;
+  --radius-sm: 8px;
+  --radius-lg: 14px;
+
+  --font-body: "Instrument Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-head: "Titling Gothic FB Wide", var(--font-body);
+
+  /* legacy aliases — existing components read these */
+  --fc-accent:        var(--accent);
+  --fc-accent-strong: var(--accent-hover);
+  --fc-accent-tint:   var(--accent-wash);
+  --fc-accent-tint-2: var(--ring);
+  --fc-accent-fg:     var(--accent-fg);
+  --fc-ink:     var(--ink);
+  --fc-ink-70:  var(--ink-muted);
+  --fc-ink-50:  var(--ink-faint);
+  --fc-line:    var(--line);
+  --fc-line-2:  var(--line-soft);
+  --fc-paper:   var(--bg);
+  --fc-card:    var(--surface);
+  --fc-gray-tint: var(--hover);
+  --fc-gray-ink:  var(--ink-muted);
+  --fc-font:   var(--font-body);
+  --fc-head:   var(--font-head);
+  --fc-radius: var(--radius);
+  --fc-shadow: var(--shadow);
+}
+
+:root[data-theme="dark"] {
+  --accent:        #ff5f52;
+  --accent-hover:  #ff7366;
+  --accent-active: #ff8477;
+  --accent-fg:     #ffffff;
+
+  --bg:          #121212;
+  --surface:     #1c1c1c;
+  --surface-2:   #262626;
+  --ink:         #ececec;
+  --ink-muted:   #a6a8a7;
+  --ink-faint:   #747776;
+  --line:        rgb(243 245 244 / 0.14);
+  --line-soft:   rgb(243 245 244 / 0.07);
+  --hover:       rgb(243 245 244 / 0.07);
+  --accent-wash: rgb(255 95 82 / 0.16);
+  --ring:        rgb(255 95 82 / 0.40);
+  --status-tint: 0.20;
+  --shadow:      0 1px 2px rgb(0 0 0 / 0.5), 0 10px 30px rgb(0 0 0 / 0.5);
+
+  --st-neutral: #9a9d9c;
+  --st-info:    #60a5fa;
+  --st-warn:    #fb923c;
+  --st-success: #4ade80;
+  --st-steel:   #94a7bd;
 }
 
 * { box-sizing: border-box; }
+html { color-scheme: light dark; }
 html, body { margin: 0; }
 body {
-  background: var(--fc-paper);
-  color: var(--fc-ink);
-  font-family: var(--fc-font);
-  font-size: 15px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14.5px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-a { color: var(--fc-accent-strong); }
-h1, h2, h3 { font-family: var(--fc-head); font-weight: 500; letter-spacing: 0.01em; }
+a { color: var(--accent-hover); }
+:root[data-theme="dark"] a { color: var(--accent); }
+h1, h2, h3 { font-family: var(--font-head); font-weight: 500; letter-spacing: 0.01em; color: var(--ink); }
 
 /* ---------- Sidebar layout ---------- */
 .fc-layout { display: flex; min-height: 100vh; }
@@ -55,12 +127,20 @@ h1, h2, h3 { font-family: var(--fc-head); font-weight: 500; letter-spacing: 0.01
 .fc-brand-text { font-family: var(--fc-head); font-size: 15px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--fc-ink); line-height: 1.1; }
 .fc-brand-text b { display: block; color: var(--fc-accent); font-weight: 500; }
 .fc-nav { display: flex; flex-direction: column; gap: 3px; }
-.fc-navlink { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 9px; text-decoration: none; color: var(--fc-ink-70); font-weight: 600; font-size: 14.5px; }
+.fc-navlink { position: relative; display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: var(--radius); text-decoration: none; color: var(--fc-ink-70); font-weight: 600; font-size: 14.5px; }
 .fc-navlink svg { width: 19px; height: 19px; flex: none; }
-.fc-navlink:hover { background: var(--fc-line-2); color: var(--fc-ink); }
-.fc-navlink.is-active { background: var(--fc-ink); color: #fff; }
+.fc-navlink:hover { background: var(--hover); color: var(--fc-ink); }
+.fc-navlink.is-active { background: var(--hover); color: var(--fc-ink); }
+.fc-navlink.is-active::before { content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
+.fc-navlink.is-active svg { color: var(--accent); }
 .fc-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 14px; border-top: 1px solid var(--fc-line); }
 .fc-user-email { font-size: 12.5px; color: var(--fc-ink-50); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px; }
+.fc-theme-toggle { display: flex; align-items: center; gap: 9px; width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--fc-ink-70); font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; }
+.fc-theme-toggle:hover { background: var(--hover); color: var(--fc-ink); }
+.fc-theme-toggle svg { width: 16px; height: 16px; flex: none; }
+.fc-theme-toggle .fc-moon { display: none; }
+:root[data-theme="dark"] .fc-theme-toggle .fc-sun { display: none; }
+:root[data-theme="dark"] .fc-theme-toggle .fc-moon { display: inline; }
 .fc-mobilebar { display: none; }
 .fc-scrim { display: none; }
 .fc-brand-m { font-family: var(--fc-head); font-size: 16px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--fc-ink); text-decoration: none; }
@@ -90,28 +170,30 @@ h1, h2, h3 { font-family: var(--fc-head); font-weight: 500; letter-spacing: 0.01
 /* ---------- Buttons ---------- */
 .fc-btn {
   font-family: var(--fc-font); font-size: 14px; font-weight: 600;
-  padding: 9px 16px; border-radius: 9px; border: 1px solid transparent;
+  padding: 9px 16px; border-radius: var(--radius); border: 1px solid transparent;
   cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  background: var(--fc-gray-tint); color: var(--fc-ink);
+  background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--fc-ink);
 }
-.fc-btn:hover { background: color-mix(in srgb, var(--color-black) 14%, white); }
+.fc-btn:hover { background: color-mix(in srgb, var(--ink) 14%, transparent); }
 .fc-btn--primary { background: var(--fc-accent); color: var(--fc-accent-fg); }
 .fc-btn--primary:hover { background: var(--fc-accent-strong); }
-.fc-btn--dark { background: var(--fc-ink); color: white; }
+.fc-btn--dark { background: var(--fc-ink); color: var(--bg); }
+.fc-btn--dark:hover { background: color-mix(in srgb, var(--ink) 86%, var(--bg)); }
 .fc-btn--ghost { background: transparent; border-color: var(--fc-line); color: var(--fc-ink-70); }
-.fc-btn--ghost:hover { background: var(--fc-line-2); }
+.fc-btn--ghost:hover { background: var(--hover); color: var(--fc-ink); }
 .fc-btn--sm { padding: 5px 10px; font-size: 13px; }
-.fc-btn--danger { background: transparent; border-color: color-mix(in srgb, var(--color-red) 40%, white); color: var(--fc-accent-strong); }
+.fc-btn--danger { background: transparent; border-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent); }
 .fc-btn[disabled] { opacity: 0.5; cursor: default; }
 
 /* ---------- Forms ---------- */
 .fc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
 .fc-field > span { font-size: 12.5px; font-weight: 600; color: var(--fc-ink-70); text-transform: uppercase; letter-spacing: 0.04em; }
 input, select, textarea {
-  font-family: var(--fc-font); font-size: 15px; color: var(--fc-ink);
-  padding: 9px 11px; border: 1px solid var(--fc-line); border-radius: 9px; background: white; width: 100%;
+  font-family: var(--fc-font); font-size: 14.5px; color: var(--fc-ink);
+  padding: 9px 11px; border: 1px solid var(--fc-line); border-radius: var(--radius); background: var(--surface); width: 100%;
 }
-input:focus, select:focus, textarea:focus { outline: 2px solid var(--fc-accent-tint-2); border-color: var(--fc-accent); }
+input::placeholder, textarea::placeholder { color: var(--fc-ink-50); }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--ring); outline-offset: 0; border-color: var(--fc-accent); }
 textarea { resize: vertical; min-height: 72px; }
 .fc-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .fc-row > * { flex: 1; min-width: 160px; }
@@ -131,28 +213,41 @@ textarea { resize: vertical; min-height: 72px; }
 /* invoices: draft=outlined gray, sent=outlined orange, paid=filled black, overdue=filled orange, void=gray struck */
 .fc-badge--inv-draft { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
 .fc-badge--inv-sent  { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
-.fc-badge--inv-paid  { background: var(--fc-ink); color: white; }
+.fc-badge--inv-paid  { background: var(--fc-ink); color: var(--bg); }
 .fc-badge--inv-overdue { background: var(--fc-accent); color: var(--fc-accent-fg); }
 .fc-badge--inv-void  { background: var(--fc-gray-tint); color: var(--fc-gray-ink); text-decoration: line-through; }
 /* quotes: draft=outlined gray, sent=outlined orange, accepted=filled black, declined/expired=gray */
 .fc-badge--q-draft    { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
 .fc-badge--q-sent     { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
-.fc-badge--q-accepted { background: var(--fc-ink); color: white; }
+.fc-badge--q-accepted { background: var(--fc-ink); color: var(--bg); }
 .fc-badge--q-declined, .fc-badge--q-expired { background: var(--fc-gray-tint); color: var(--fc-gray-ink); }
 /* client status */
 .fc-badge--c-prospect { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
-.fc-badge--c-active   { background: var(--fc-ink); color: white; }
+.fc-badge--c-active   { background: var(--fc-ink); color: var(--bg); }
 .fc-badge--c-past     { background: var(--fc-gray-tint); color: var(--fc-gray-ink); }
 /* social post status */
 .fc-badge--s-idea     { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
 .fc-badge--s-drafting { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
-.fc-badge--s-ready    { background: var(--fc-ink); color: white; }
+.fc-badge--s-ready    { background: var(--fc-ink); color: var(--bg); }
 .fc-badge--s-posted   { background: var(--color-green); color: white; }
 /* hopper task status */
 .fc-badge--t-todo        { border-color: var(--fc-line); color: var(--fc-gray-ink); background: var(--fc-gray-tint); }
 .fc-badge--t-in_progress { border-color: var(--fc-accent); color: var(--fc-accent-strong); }
-.fc-badge--t-waiting     { background: var(--fc-ink); color: white; }
+.fc-badge--t-waiting     { background: var(--fc-ink); color: var(--bg); }
 .fc-badge--t-done        { background: var(--color-green); color: white; }
+
+/* ---------- Status system (dot + label, tinted bg; hue via --st) ---------- */
+.fc-status { --st: var(--st-neutral); display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; padding: 3px 10px 3px 8px; border-radius: 999px; color: var(--st); background: color-mix(in srgb, var(--st) calc(var(--status-tint) * 100%), transparent); white-space: nowrap; }
+.fc-status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--st); flex: none; }
+.fc-status--neutral { --st: var(--st-neutral); }
+.fc-status--info    { --st: var(--st-info); }
+.fc-status--warn    { --st: var(--st-warn); }
+.fc-status--success { --st: var(--st-success); }
+.fc-status--steel   { --st: var(--st-steel); }
+.fc-status--accent  { --st: var(--accent); }
+/* left status stripe on a list row's first cell */
+.fc-stripe td:first-child { position: relative; }
+.fc-stripe td:first-child::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--st, var(--st-neutral)); }
 
 /* ---------- Calendar post-type palette (distinct hues per the reference deliverable) ---------- */
 :root {
@@ -182,8 +277,9 @@ textarea { resize: vertical; min-height: 72px; }
 .fc-empty { text-align: center; color: var(--fc-ink-50); padding: 40px; }
 .fc-list-head { display: flex; align-items: center; gap: 12px; margin: 22px 0 10px; }
 .fc-list-head h2 { font-size: 15px; margin: 0; text-transform: uppercase; letter-spacing: 0.04em; }
-.fc-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 4px 10px; border: 1px solid var(--fc-line); border-radius: 999px; background: white; cursor: pointer; }
-.fc-chip.is-on { background: var(--fc-ink); color: white; border-color: var(--fc-ink); }
+.fc-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; padding: 4px 10px; border: 1px solid var(--fc-line); border-radius: 999px; background: var(--surface); color: var(--fc-ink-70); cursor: pointer; }
+.fc-chip:hover { background: var(--hover); }
+.fc-chip.is-on { background: var(--fc-ink); color: var(--bg); border-color: var(--fc-ink); }
 .fc-banner { background: var(--fc-accent-tint); border: 1px solid var(--fc-accent); border-radius: var(--fc-radius); padding: 14px 18px; margin-bottom: 18px; display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
 .fc-banner b { font-weight: 700; }
 .fc-items td input { padding: 6px 8px; }
@@ -193,8 +289,8 @@ textarea { resize: vertical; min-height: 72px; }
 
 /* toast */
 #fc-toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; z-index: 60; }
-.fc-toast { background: var(--fc-ink); color: white; padding: 10px 16px; border-radius: 10px; font-size: 14px; box-shadow: var(--fc-shadow); transition: opacity 0.3s, transform 0.3s; }
-.fc-toast--err { background: var(--fc-accent-strong); }
+.fc-toast { background: var(--fc-ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; box-shadow: var(--fc-shadow); transition: opacity 0.3s, transform 0.3s; }
+.fc-toast--err { background: var(--accent); color: var(--accent-fg); }
 .fc-toast.out { opacity: 0; transform: translateY(8px); }
 /* toast shown above modals — via Popover API (--pop) or inside the open dialog (--float) */
 .fc-toast--pop, .fc-toast--float { position: fixed; inset: auto; bottom: 22px; left: 50%; transform: translateX(-50%); margin: 0; border: none; }
@@ -236,8 +332,8 @@ textarea { resize: vertical; min-height: 72px; }
 
 /* ---------- Calendar: view toggle ---------- */
 .seg { display: inline-flex; border: 1px solid var(--fc-line); border-radius: 10px; overflow: hidden; }
-.seg button { border: none; background: white; padding: 8px 14px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--fc-ink-70); }
-.seg button.is-on { background: var(--fc-ink); color: white; }
+.seg button { border: none; background: var(--surface); padding: 8px 14px; font-family: var(--font-body); font-weight: 600; font-size: 14px; cursor: pointer; color: var(--fc-ink-70); }
+.seg button.is-on { background: var(--fc-ink); color: var(--bg); }
 .seg button + button { border-left: 1px solid var(--fc-line); }
 
 /* ---------- Calendar: month grid (screen + print) ---------- */
@@ -345,8 +441,8 @@ textarea { resize: vertical; min-height: 72px; }
 }
 
 /* ---------- Dialog ---------- */
-.fc-dialog { border: none; border-radius: 16px; padding: 0; width: 92%; max-width: 560px; margin: auto; inset: 0; height: fit-content; max-height: 90vh; overflow: auto; box-shadow: var(--fc-shadow); }
-.fc-dialog::backdrop { background: color-mix(in srgb, var(--color-black) 45%, transparent); }
+.fc-dialog { border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 0; width: 92%; max-width: 560px; margin: auto; inset: 0; height: fit-content; max-height: 90vh; overflow: auto; box-shadow: var(--shadow); background: var(--surface); color: var(--ink); }
+.fc-dialog::backdrop { background: color-mix(in srgb, #000 55%, transparent); }
 .fc-dialog-body { padding: 24px; position: relative; }
 .fc-dialog-x { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; border: none; background: none; font-size: 24px; line-height: 1; color: var(--fc-ink-50); cursor: pointer; border-radius: 7px; display: grid; place-items: center; }
 .fc-dialog-x:hover { background: var(--fc-line-2); color: var(--fc-ink); }

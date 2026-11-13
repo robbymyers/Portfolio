@@ -127,6 +127,23 @@ export async function confirmAction(message) {
 }
 
 // ---------------------------------------------------------------------------
+// Theme (light / dark). An inline <head> script sets the initial value before
+// paint; this only toggles + persists it.
+// ---------------------------------------------------------------------------
+export function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+}
+export function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  try { localStorage.setItem('fc-theme', t); } catch (e) { /* private mode */ }
+}
+export function toggleTheme() {
+  setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+}
+const SUN = '<svg class="fc-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const MOON = '<svg class="fc-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+
+// ---------------------------------------------------------------------------
 // App shell + auth gate
 // ---------------------------------------------------------------------------
 const ICON = {
@@ -152,6 +169,7 @@ function shellHTML(active, email) {
       <a class="fc-brand" href="index.html"><span class="fc-brand-mark">FS</span><span class="fc-brand-text">Freelance<b>Studio</b></span></a>
       <nav class="fc-nav">${links}</nav>
       <div class="fc-side-foot">
+        <button class="fc-theme-toggle" id="fc-theme" type="button" aria-label="Toggle theme">${SUN}${MOON}<span class="fc-theme-label"></span></button>
         <span class="fc-user-email">${esc(email)}</span>
         <button class="fc-btn fc-btn--ghost" id="fc-signout">Sign out</button>
       </div>
@@ -269,6 +287,14 @@ export async function mountApp({ active, render }) {
     if (ham) ham.addEventListener('click', () => { sb.classList.add('is-open'); scrim.classList.add('is-open'); });
     if (scrim) scrim.addEventListener('click', close);
     sb.querySelectorAll('.fc-navlink').forEach((a) => a.addEventListener('click', close));
+
+    const themeBtn = document.getElementById('fc-theme');
+    if (themeBtn) {
+      const label = themeBtn.querySelector('.fc-theme-label');
+      const sync = () => { label.textContent = currentTheme() === 'dark' ? 'Light mode' : 'Dark mode'; };
+      sync();
+      themeBtn.addEventListener('click', () => { toggleTheme(); sync(); });
+    }
   }
 
   function wireLogin() {
