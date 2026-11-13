@@ -184,6 +184,8 @@ h1, h2, h3 { font-family: var(--font-head); font-weight: 500; letter-spacing: 0.
 .fc-btn--sm { padding: 5px 10px; font-size: 13px; }
 .fc-btn--danger { background: transparent; border-color: color-mix(in srgb, var(--accent) 45%, transparent); color: var(--accent); }
 .fc-btn[disabled] { opacity: 0.5; cursor: default; }
+.fc-btn svg { width: 15px; height: 15px; flex: none; }
+.fc-btn--sm svg { width: 14px; height: 14px; }
 
 /* ---------- Forms ---------- */
 .fc-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
@@ -301,8 +303,16 @@ textarea { resize: vertical; min-height: 72px; }
    ===================================================================== */
 .fc-print { display: none; }
 @media print {
+  /* Printed docs are always on white paper — force the light token set so a
+     quote/invoice printed while the app is in dark mode stays readable. */
+  :root, :root[data-theme="dark"] {
+    --accent: #FD4338; --accent-hover: #ea382e; --accent-fg: #ffffff;
+    --bg: #ffffff; --surface: #ffffff; --surface-2: #eceeed;
+    --ink: #141414; --ink-muted: #5c5f5e; --ink-faint: #8a8d8c;
+    --line: rgb(18 18 18 / 0.18); --line-soft: rgb(18 18 18 / 0.08);
+  }
   @page { margin: 0.6in; }
-  body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: white; color: var(--ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .fc-topbar, .fc-no-print, #fc-toast { display: none !important; }
   .fc-main { max-width: none; margin: 0; padding: 0; }
   .fc-screen { display: none !important; }

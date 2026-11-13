@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script>(function(){try{var s=localStorage.getItem("fc-theme");var t=(s==="dark"||s==="light")?s:(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","light");}})();</script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Archive · Freelance</title>
+  <link rel="icon" type="image/svg+xml" href="../img/favicon.svg" />
+  <link rel="stylesheet" href="../css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import { mountApp, table, toast, esc, fmtDate, parseDate } from './app.js';
+
+    const STATUSES = [
+      ['unassigned',          'Unassigned',          'neutral'],
+      ['waiting_on_approval', 'Waiting on approval', 'info'],
+      ['needs_attention',     'Needs attention',     'warn'],
+      ['ordered',             'Ordered',             'steel'],
+      ['completed',           'Completed',           'success'],
+    ];
+    const meta = (s) => STATUSES.find((x) => x[0] === s) || ['unassigned', 'Unassigned', 'neutral'];
+    const statusPill = (s) => `<span class="fc-status fc-status--${meta(s)[2]}">${meta(s)[1]}</span>`;
+
+    const RESTORE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+    const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>';
+
+    mountApp({ active: 'archive', render: async (main) => {
+      let [tasks, clients, subRows] = await Promise.all([
+        table('hopper_tasks').select('*').not('archived_at', 'is', null).order('archived_at', { ascending: false }).then((r) => r.data || []),
+        table('clients').select('id,name,business_name').order('name').then((r) => r.data || []),
+        table('hopper_subtasks').select('task_id,done').then((r) => r.data || []),
+      ]);
+      const clientName = (id) => { const c = clients.find((x) => x.id === id); return c ? (c.business_name || c.name) : ''; };
+      const prog = (id) => { const s = subRows.filter((x) => x.task_id === id); return s.length ? `${s.filter((x) => x.done).length}/${s.length}` : '—'; };
+
+      function shell() {
+        main.innerHTML = `
+          <div class="fc-page-head" style="flex-wrap:wrap;gap:6px 16px">
+            <a class="fc-crumb" href="hopper.html">&larr; The Hopper</a>
+            <h1 style="flex-basis:100%">Archive</h1>
+          </div>
+          <p class="fc-muted" style="margin:-8px 0 20px">Completed and retired projects. Restore one to send it back to the Hopper, or delete it for good.</p>
+          <div id="list"></div>
+          <dialog id="confirm-dlg" class="fc-dialog"></dialog>`;
+        renderList();
+      }
+
+      function rowHTML(t) {
+        const subMeta = [t.client_id ? esc(clientName(t.client_id)) : '', t.due_date ? `Due ${fmtDate(t.due_date, { month: 'short', day: 'numeric' })}` : ''].filter(Boolean).join(' · ');
+        return `<tr data-id="${t.id}">
+          <td>
+            <b>${esc(t.title)}</b>
+            ${subMeta ? `<div class="fc-muted" style="font-size:13px;margin-top:2px">${subMeta}</div>` : ''}
+          </td>
+          <td style="width:70px" class="fc-muted" title="Checklist progress">${prog(t.id)}</td>
+          <td style="width:180px">${statusPill(t.status)}</td>
+          <td class="fc-muted" style="width:150px;font-size:13px">Archived ${fmtDate(t.archived_at, { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+          <td style="width:150px;text-align:right;white-space:nowrap">
+            <button class="fc-btn fc-btn--ghost fc-btn--sm" data-restore="${t.id}">${RESTORE} Restore</button>
+            <button class="hop-ico hop-ico--del" data-del="${t.id}" title="Delete permanently" style="opacity:.55">${TRASH}</button>
+          </td>
+        </tr>`;
+      }
+
+      function renderList() {
+        const box = main.querySelector('#list');
+        if (!tasks.length) { box.innerHTML = '<div class="fc-card fc-empty">Nothing archived yet. Archive completed projects from the Hopper and they will land here.</div>'; return; }
+        box.innerHTML = `<div class="fc-card" style="padding:0"><table class="fc-table"><tbody>${tasks.map(rowHTML).join('')}</tbody></table></div>`;
+        box.querySelectorAll('[data-restore]').forEach((b) => b.addEventListener('click', () => restore(b.dataset.restore)));
+        box.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', () => askDelete(tasks.find((x) => x.id === b.dataset.del))));
+      }
+
+      async function restore(id) {
+        const t = tasks.find((x) => x.id === id); if (!t) return;
+        tasks = tasks.filter((x) => x.id !== id);
+        renderList();
+        const { error } = await table('hopper_tasks').update({ archived_at: null }).eq('id', id);
+        if (error) { toast(error.message, 'err'); tasks.push(t); renderList(); }
+        else toast('Restored to the Hopper');
+      }
+
+      function askDelete(t) {
+        if (!t) return;
+        const dlg = main.querySelector('#confirm-dlg');
+        dlg.innerHTML = `<div class="fc-dialog-body">
+          <h2 style="margin:0 0 8px">Delete permanently?</h2>
+          <p style="margin:0 0 14px">“${esc(t.title)}” and its checklist will be removed for good. This cannot be undone.</p>
+          <div class="fc-row"><button type="button" class="fc-btn fc-btn--ghost" id="x-no">Cancel</button><button type="button" class="fc-btn fc-btn--danger" id="x-yes">Delete</button></div>
+        </div>`;
+        dlg.showModal();
+        dlg.querySelector('#x-no').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#x-yes').addEventListener('click', async () => {
+          const btn = dlg.querySelector('#x-yes'); btn.disabled = true; btn.textContent = 'Deleting…';
+          try {
+            const { error } = await table('hopper_tasks').delete().eq('id', t.id);
+            if (error) throw error;
+            tasks = tasks.filter((x) => x.id !== t.id);
+            dlg.close(); toast('Deleted'); renderList();
+          } catch (err) { toast(err.message || 'Delete failed', 'err'); btn.disabled = false; btn.textContent = 'Delete'; }
+        });
+      }
+
+      shell();
+    }});
+  </script>
+</body>
+</html>
