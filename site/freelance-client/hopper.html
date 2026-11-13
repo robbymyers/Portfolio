@@ -13,61 +13,121 @@
 <body>
   <div id="app"></div>
   <script type="module">
-    import { mountApp, table, toast, esc, fmtDate, todayISO, parseDate } from './app.js';
+    import { mountApp, table, toast, esc, fmtDate, todayISO, parseDate, daysBetween } from './app.js';
 
-    const STATUSES = [['todo', 'To do'], ['in_progress', 'In progress'], ['waiting', 'Waiting'], ['done', 'Done']];
-    const label = (s) => (STATUSES.find((x) => x[0] === s) || [, s])[1];
-    const badge = (s) => `<span class="fc-badge fc-badge--t-${s}">${label(s)}</span>`;
+    // Projects model — statuses, each with a semantic hue token.
+    const STATUSES = [
+      ['unassigned',          'Unassigned',          'neutral'],
+      ['waiting_on_approval', 'Waiting on approval', 'info'],
+      ['needs_attention',     'Needs attention',     'warn'],
+      ['ordered',             'Ordered',             'steel'],
+      ['completed',           'Completed',           'success'],
+    ];
+    const meta  = (s) => STATUSES.find((x) => x[0] === s) || ['unassigned', 'Unassigned', 'neutral'];
+    const label = (s) => meta(s)[1];
+    const hue   = (s) => `var(--st-${meta(s)[2]})`;
+
     const PIN = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 2a1 1 0 0 1 .117 1.993L15.5 4H15l.7 6h1.3a1 1 0 0 1 .117 1.993L17 12h-4v8a1 1 0 0 1-1.993.117L11 20v-8H7a1 1 0 0 1-.117-1.993L7 10h1.3l.7-6h-.5a1 1 0 0 1-.117-1.993L8.5 2h7Z"/></svg>';
     const TRASH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6M14 11v6"/></svg>';
+    const CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>';
+    const DUE_SOON_DAYS = 7;
 
     mountApp({ active: 'hopper', render: async (main) => {
-      let [tasks, clients] = await Promise.all([
+      let [tasks, clients, subRows] = await Promise.all([
         table('hopper_tasks').select('*').is('archived_at', null).order('created_at', { ascending: false }).then((r) => r.data || []),
         table('clients').select('id,name,business_name').order('name').then((r) => r.data || []),
+        table('hopper_subtasks').select('*').then((r) => r.data || []),
       ]);
-      const clientName = (id) => { const c = clients.find((x) => x.id === id); return c ? (c.business_name || c.name) : ''; };
+      const subSort = (a, b) => (a.sort_order || 0) - (b.sort_order || 0) || String(a.created_at).localeCompare(String(b.created_at));
+      const attachSubs = () => tasks.forEach((t) => { t.subtasks = subRows.filter((s) => s.task_id === t.id).sort(subSort); });
+      attachSubs();
 
+      const clientName = (id) => { const c = clients.find((x) => x.id === id); return c ? (c.business_name || c.name) : ''; };
+      const prog = (t) => ({ total: t.subtasks.length, done: t.subtasks.filter((s) => s.done).length });
+      const isOver = (t) => t.due_date && t.status !== 'completed' && parseDate(t.due_date) < parseDate(todayISO());
+      const isSoon = (t) => t.due_date && t.status !== 'completed' && !isOver(t) && daysBetween(todayISO(), t.due_date) <= DUE_SOON_DAYS;
+
+      const expanded = new Set();
       let filter = 'all';
-      const filtered = () => filter === 'all' ? tasks : tasks.filter((t) => t.status === filter);
+      const matchFilter = (t) => filter === 'all' ? true : filter === 'due_soon' ? (isSoon(t) || isOver(t)) : t.status === filter;
+      const filtered = () => tasks.filter(matchFilter);
       const dueKey = (t) => t.due_date || '9999-99-99';
       const byOrder = (a, b) => (a.sort_order || 0) - (b.sort_order || 0) || dueKey(a).localeCompare(dueKey(b));
 
       function shell() {
+        const dueCount = tasks.filter((t) => isSoon(t) || isOver(t)).length;
+        const completedCount = tasks.filter((t) => t.status === 'completed').length;
+        const chips = [['all', 'All', tasks.length], ['due_soon', 'Due soon', dueCount],
+          ...STATUSES.map(([v, l]) => [v, l, tasks.filter((t) => t.status === v).length])];
         main.innerHTML = `
           <div class="fc-page-head" style="flex-wrap:wrap;gap:10px">
             <h1>The Hopper</h1>
             <div class="fc-spacer"></div>
-            <button class="fc-btn fc-btn--primary" id="new-task">+ New task</button>
+            ${completedCount ? `<button class="fc-btn fc-btn--ghost" id="archive-done">Archive completed (${completedCount})</button>` : ''}
+            <button class="fc-btn fc-btn--primary" id="new-task">+ New project</button>
           </div>
           <div class="fc-list-head" style="flex-wrap:wrap;gap:8px">
-            ${['all', ...STATUSES.map((s) => s[0])].map((s) => {
-              const n = s === 'all' ? tasks.length : tasks.filter((t) => t.status === s).length;
-              return `<button class="fc-chip ${s === filter ? 'is-on' : ''}" data-filter="${s}">${s === 'all' ? 'All' : label(s)} ${n}</button>`;
-            }).join('')}
+            ${chips.map(([v, l, n]) => `<button class="fc-chip ${v === filter ? 'is-on' : ''}" data-filter="${v}">${l} ${n}</button>`).join('')}
           </div>
           <div id="list"></div>
           <dialog id="dlg" class="fc-dialog"></dialog>
           <dialog id="confirm-dlg" class="fc-dialog"></dialog>`;
         main.querySelectorAll('[data-filter]').forEach((b) => b.addEventListener('click', () => { filter = b.dataset.filter; shell(); }));
         main.querySelector('#new-task').addEventListener('click', () => openEdit(null));
+        const arch = main.querySelector('#archive-done');
+        if (arch) arch.addEventListener('click', archiveCompleted);
         renderList();
       }
 
+      function dueHTML(t) {
+        if (!t.due_date) return '';
+        const cls = isOver(t) ? 'hop-due--over' : isSoon(t) ? 'hop-due--soon' : 'fc-muted';
+        const lbl = isOver(t) ? 'Overdue ' : '';
+        return `<span class="${cls}">${lbl}${fmtDate(t.due_date, { month: 'short', day: 'numeric' })}</span>`;
+      }
+
       function rowHTML(t) {
-        const overdue = t.due_date && t.status !== 'done' && parseDate(t.due_date) < parseDate(todayISO());
-        return `<tr class="fc-rowlink" draggable="true" data-id="${t.id}">
-          <td style="width:30px"><input type="checkbox" class="t-done" data-id="${t.id}" ${t.status === 'done' ? 'checked' : ''} onclick="event.stopPropagation()" style="width:auto"/></td>
-          <td><b style="${t.status === 'done' ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.title)}</b>${t.description ? `<div class="fc-muted" style="font-size:13px">${esc(t.description).slice(0, 90)}</div>` : ''}</td>
-          <td class="fc-muted">${t.client_id ? esc(clientName(t.client_id)) : ''}</td>
-          <td class="${overdue ? '' : 'fc-muted'}" style="${overdue ? 'color:var(--fc-accent-strong);font-weight:600' : ''}">${t.due_date ? fmtDate(t.due_date, { month: 'short', day: 'numeric' }) : ''}</td>
-          <td>${badge(t.status)}</td>
+        const p = prog(t);
+        const done = t.status === 'completed';
+        const subMeta = [t.client_id ? esc(clientName(t.client_id)) : '', dueHTML(t)].filter(Boolean).join(' · ');
+        const progCell = p.total
+          ? `<div class="hop-progress"><span class="hop-bar"><i style="width:${Math.round((p.done / p.total) * 100)}%"></i></span>${p.done}/${p.total}</div>`
+          : '<span class="fc-muted" style="font-size:12px">—</span>';
+        return `<tr class="fc-rowlink fc-stripe" draggable="true" data-id="${t.id}" style="--st:${hue(t.status)}">
+          <td>
+            <div style="display:flex;align-items:flex-start;gap:9px">
+              ${p.total ? `<button class="hop-expand ${expanded.has(t.id) ? 'is-open' : ''}" data-exp="${t.id}" title="Show checklist" onclick="event.stopPropagation()">${CHEV}</button>` : '<span style="width:21px;flex:none"></span>'}
+              <div style="min-width:0">
+                <b style="${done ? 'text-decoration:line-through;opacity:.6' : ''}">${esc(t.title)}</b>
+                ${subMeta ? `<div class="fc-muted" style="font-size:13px;margin-top:2px">${subMeta}</div>` : ''}
+              </div>
+            </div>
+          </td>
+          <td style="width:120px">${progCell}</td>
+          <td style="width:200px">
+            <span class="hop-status-wrap" style="--st:${hue(t.status)}" onclick="event.stopPropagation()">
+              <select class="hop-status-select" data-status="${t.id}" style="--st:${hue(t.status)}">
+                ${STATUSES.map(([v, l]) => `<option value="${v}" ${t.status === v ? 'selected' : ''}>${l}</option>`).join('')}
+              </select>
+            </span>
+          </td>
           <td class="hop-actions">
             <button class="hop-ico ${t.pinned_at ? 'is-pinned' : ''}" data-pin="${t.id}" title="${t.pinned_at ? 'Unpin' : 'Pin to top'}">${PIN}</button>
             <button class="hop-ico hop-ico--del" data-del="${t.id}" title="Delete">${TRASH}</button>
           </td>
-        </tr>`;
+        </tr>
+        ${p.total && expanded.has(t.id) ? subrowHTML(t) : ''}`;
       }
+
+      function subrowHTML(t) {
+        const items = t.subtasks.map((s) => `
+          <label class="hop-check ${s.done ? 'is-done' : ''}" onclick="event.stopPropagation()">
+            <input type="checkbox" class="sub-toggle" data-sub="${s.id}" ${s.done ? 'checked' : ''} />
+            <span>${esc(s.title)}</span>
+          </label>`).join('');
+        return `<tr class="hop-subrow" data-sub-for="${t.id}"><td colspan="4"><div class="hop-checklist">${items || '<div class="hop-check-empty">No checklist items yet.</div>'}</div></td></tr>`;
+      }
+
       const tableFor = (items) => `<div class="fc-card" style="padding:0;margin-bottom:16px"><table class="fc-table"><tbody>${items.map(rowHTML).join('')}</tbody></table></div>`;
 
       function renderList() {
@@ -75,22 +135,37 @@
         const pinned = list.filter((t) => t.pinned_at).sort(byOrder);
         const rest = list.filter((t) => !t.pinned_at).sort(byOrder);
         const box = main.querySelector('#list');
-        if (!list.length) { box.innerHTML = '<div class="fc-card fc-empty">Nothing here yet. Add a task to get started.</div>'; return; }
+        if (!list.length) { box.innerHTML = '<div class="fc-card fc-empty">Nothing here. Add a project to get started.</div>'; return; }
         box.innerHTML =
           (pinned.length ? `<div class="hop-group-label"><span class="hop-pin-mark">${PIN}</span> Pinned</div>${tableFor(pinned)}` : '')
           + (rest.length ? tableFor(rest) : '');
 
-        box.querySelectorAll('.t-done').forEach((cb) => cb.addEventListener('change', async () => {
-          const t = tasks.find((x) => x.id === cb.dataset.id);
-          t.status = cb.checked ? 'done' : 'todo';
+        box.querySelectorAll('[data-exp]').forEach((b) => b.addEventListener('click', (e) => {
+          e.stopPropagation(); const id = b.dataset.exp;
+          if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
           renderList();
-          const { error } = await table('hopper_tasks').update({ status: t.status }).eq('id', t.id);
-          if (error) toast(error.message, 'err');
         }));
+        box.querySelectorAll('.sub-toggle').forEach((cb) => cb.addEventListener('change', () => toggleSub(cb.dataset.sub, cb.checked)));
+        box.querySelectorAll('[data-status]').forEach((sel) => sel.addEventListener('change', () => changeStatus(sel.dataset.status, sel.value)));
         box.querySelectorAll('[data-pin]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); togglePin(b.dataset.pin); }));
         box.querySelectorAll('[data-del]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); askDelete(tasks.find((x) => x.id === b.dataset.del)); }));
         box.querySelectorAll('.fc-rowlink').forEach((tr) => tr.addEventListener('click', () => openEdit(tasks.find((x) => x.id === tr.dataset.id))));
         wireDnD(box);
+      }
+
+      async function changeStatus(id, status) {
+        const t = tasks.find((x) => x.id === id); if (!t) return;
+        t.status = status;
+        shell();
+        const { error } = await table('hopper_tasks').update({ status }).eq('id', id);
+        if (error) toast(error.message, 'err');
+      }
+
+      async function toggleSub(id, done) {
+        const s = subRows.find((x) => x.id === id); if (!s) return;
+        s.done = done; attachSubs(); renderList();
+        const { error } = await table('hopper_subtasks').update({ done }).eq('id', id);
+        if (error) toast(error.message, 'err');
       }
 
       async function togglePin(id) {
@@ -101,12 +176,34 @@
         if (error) toast(error.message, 'err');
       }
 
+      function archiveCompleted() {
+        const ids = tasks.filter((t) => t.status === 'completed').map((t) => t.id);
+        if (!ids.length) return;
+        const dlg = main.querySelector('#confirm-dlg');
+        dlg.innerHTML = `<div class="fc-dialog-body">
+          <h2 style="margin:0 0 8px">Archive completed?</h2>
+          <p style="margin:0 0 14px">${ids.length} completed project${ids.length > 1 ? 's' : ''} will move to the archive. They leave the board but are not deleted.</p>
+          <div class="fc-row"><button type="button" class="fc-btn fc-btn--ghost" id="x-no">Cancel</button><button type="button" class="fc-btn fc-btn--dark" id="x-yes">Archive</button></div>
+        </div>`;
+        dlg.showModal();
+        dlg.querySelector('#x-no').addEventListener('click', () => dlg.close());
+        dlg.querySelector('#x-yes').addEventListener('click', async () => {
+          const btn = dlg.querySelector('#x-yes'); btn.disabled = true; btn.textContent = 'Archiving…';
+          try {
+            const { error } = await table('hopper_tasks').update({ archived_at: new Date().toISOString() }).in('id', ids);
+            if (error) throw error;
+            tasks = tasks.filter((t) => !ids.includes(t.id));
+            dlg.close(); toast('Archived'); shell();
+          } catch (err) { toast(err.message || 'Archive failed', 'err'); btn.disabled = false; btn.textContent = 'Archive'; }
+        });
+      }
+
       function askDelete(t) {
         if (!t) return;
         const dlg = main.querySelector('#confirm-dlg');
         dlg.innerHTML = `<div class="fc-dialog-body">
-          <h2 style="margin:0 0 8px">Delete task?</h2>
-          <p style="margin:0 0 14px">“${esc(t.title)}” will be permanently removed.</p>
+          <h2 style="margin:0 0 8px">Delete project?</h2>
+          <p style="margin:0 0 14px">“${esc(t.title)}” and its checklist will be permanently removed.</p>
           <div class="fc-row"><button type="button" class="fc-btn fc-btn--ghost" id="x-no">Cancel</button><button type="button" class="fc-btn fc-btn--danger" id="x-yes">Delete</button></div>
         </div>`;
         dlg.showModal();
@@ -117,7 +214,8 @@
             const { error } = await table('hopper_tasks').delete().eq('id', t.id);
             if (error) throw error;
             tasks = tasks.filter((x) => x.id !== t.id);
-            dlg.close(); toast('Task deleted'); renderList();
+            subRows = subRows.filter((s) => s.task_id !== t.id);
+            dlg.close(); toast('Project deleted'); shell();
           } catch (err) { toast(err.message || 'Delete failed', 'err'); btn.disabled = false; btn.textContent = 'Delete'; }
         });
       }
@@ -136,7 +234,6 @@
       async function reorder(id, targetId, below) {
         const a = tasks.find((t) => t.id === id), b = tasks.find((t) => t.id === targetId);
         if (!a || !b || (!!a.pinned_at) !== (!!b.pinned_at)) return; // same group only
-        // full ordered list: pinned group first, each sorted by current order
         const pinned = tasks.filter((t) => t.pinned_at).sort(byOrder);
         const rest = tasks.filter((t) => !t.pinned_at).sort(byOrder);
         const ordered = [...pinned, ...rest];
@@ -153,18 +250,25 @@
         if (err) toast(err.error.message, 'err');
       }
 
+      // ---- new / edit project (fields + subtask checklist) ----
       function openEdit(t) {
         const dlg = main.querySelector('#dlg');
+        const draft = t ? t.subtasks.map((s) => ({ id: s.id, title: s.title, done: s.done })) : [];
         dlg.innerHTML = `
           <form class="fc-dialog-body" id="tform">
             <button type="button" class="fc-dialog-x" id="t-x" aria-label="Close">&times;</button>
-            <h2 style="margin:0 0 14px">${t ? 'Edit' : 'New'} task</h2>
+            <h2 style="margin:0 0 14px">${t ? 'Edit' : 'New'} project</h2>
             <label class="fc-field"><span>Title *</span><input name="title" id="t-title" value="${esc(t?.title)}" /></label>
             <label class="fc-field"><span>Description</span><textarea name="description">${esc(t?.description)}</textarea></label>
             <div class="fc-row">
               <label class="fc-field"><span>Status</span><select name="status">${STATUSES.map(([v, l]) => `<option value="${v}" ${t?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
               <label class="fc-field"><span>Due date</span><input type="date" name="due_date" value="${esc(t?.due_date)}" /></label>
-              <label class="fc-field"><span>Client (optional)</span><select name="client_id"><option value="">—</option>${clients.map((c) => `<option value="${c.id}" ${t?.client_id === c.id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select></label>
+            </div>
+            <label class="fc-field"><span>Client</span><select name="client_id"><option value="">Not assigned</option>${clients.map((c) => `<option value="${c.id}" ${t?.client_id === c.id ? 'selected' : ''}>${esc(c.business_name || c.name)}</option>`).join('')}</select></label>
+            <div class="fc-field">
+              <span>Checklist</span>
+              <div id="t-subs"></div>
+              <button type="button" class="fc-btn fc-btn--ghost fc-btn--sm" id="t-addsub" style="align-self:flex-start;margin-top:4px">+ Add item</button>
             </div>
             <div class="fc-row" style="margin-top:6px">
               ${t ? '<button type="button" class="fc-btn fc-btn--danger" id="t-del">Delete</button>' : ''}
@@ -172,6 +276,22 @@
               <button type="button" class="fc-btn fc-btn--primary" id="t-save">Save</button>
             </div>
           </form>`;
+
+        const subsBox = dlg.querySelector('#t-subs');
+        function renderSubs() {
+          subsBox.innerHTML = draft.map((s, i) => `
+            <div class="hop-sub-edit">
+              <input type="checkbox" class="hop-sub-done" data-i="${i}" ${s.done ? 'checked' : ''} title="Done" />
+              <input type="text" data-i="${i}" value="${esc(s.title)}" placeholder="Checklist item" />
+              <button type="button" class="hop-sub-rm" data-i="${i}" title="Remove">${TRASH}</button>
+            </div>`).join('');
+          subsBox.querySelectorAll('input[type="text"]').forEach((inp) => inp.addEventListener('input', () => { draft[inp.dataset.i].title = inp.value; }));
+          subsBox.querySelectorAll('.hop-sub-done').forEach((cb) => cb.addEventListener('change', () => { draft[cb.dataset.i].done = cb.checked; }));
+          subsBox.querySelectorAll('.hop-sub-rm').forEach((b) => b.addEventListener('click', () => { draft.splice(Number(b.dataset.i), 1); renderSubs(); }));
+        }
+        renderSubs();
+        dlg.querySelector('#t-addsub').addEventListener('click', () => { draft.push({ title: '', done: false }); renderSubs(); subsBox.querySelector('.hop-sub-edit:last-child input[type="text"]')?.focus(); });
+
         dlg.showModal();
         dlg.querySelector('#t-x').addEventListener('click', () => dlg.close());
         dlg.querySelector('#t-cancel').addEventListener('click', () => dlg.close());
@@ -185,19 +305,48 @@
           const payload = { title, description: f.get('description') || null, status: f.get('status'), due_date: f.get('due_date') || null, client_id: f.get('client_id') || null };
           save.disabled = true; save.textContent = 'Saving…';
           try {
+            let taskId;
             if (t) {
               const { error } = await table('hopper_tasks').update(payload).eq('id', t.id);
               if (error) throw error;
               Object.assign(t, payload);
+              taskId = t.id;
             } else {
               const { data, error } = await table('hopper_tasks').insert(payload).select().single();
               if (error) throw error;
+              data.subtasks = [];
               tasks.push(data);
+              taskId = data.id;
             }
-            toast(t ? 'Task saved' : 'Task added');
-            dlg.close(); renderList();
+            await saveSubtasks(taskId, t ? t.subtasks : [], draft);
+            toast(t ? 'Project saved' : 'Project added');
+            dlg.close(); shell();
           } catch (err) { toast(err.message || 'Save failed', 'err'); save.disabled = false; save.textContent = 'Save'; }
         });
+      }
+
+      // Diff the checklist against what was there: delete removed, update changed, insert new.
+      async function saveSubtasks(taskId, original, draft) {
+        const clean = draft.map((s) => ({ ...s, title: (s.title || '').trim() })).filter((s) => s.title);
+        const keepIds = clean.filter((s) => s.id).map((s) => s.id);
+        const toDelete = original.filter((o) => !keepIds.includes(o.id)).map((o) => o.id);
+        if (toDelete.length) {
+          const { error } = await table('hopper_subtasks').delete().in('id', toDelete); if (error) throw error;
+        }
+        for (const s of clean) {
+          if (s.id) {
+            const o = original.find((x) => x.id === s.id);
+            if (o && (o.title !== s.title || o.done !== s.done)) {
+              const { error } = await table('hopper_subtasks').update({ title: s.title, done: s.done }).eq('id', s.id); if (error) throw error;
+            }
+          } else {
+            const { error } = await table('hopper_subtasks').insert({ task_id: taskId, title: s.title, done: s.done, sort_order: clean.indexOf(s) }); if (error) throw error;
+          }
+        }
+        // Refresh this task's checklist from the DB so inline toggles have fresh ids.
+        const { data } = await table('hopper_subtasks').select('*').eq('task_id', taskId);
+        subRows = subRows.filter((s) => s.task_id !== taskId).concat(data || []);
+        attachSubs();
       }
 
       shell();
