@@ -559,8 +559,17 @@ ul { list-style: none; }
   .cw-mockup--famcal  { width: 330px; right: -56px; top: 50%; transform: translateY(-50%); }
   .cw-mockup--fitness { width: 250px; right: 32px; top: 24px; }
   .cw-mockup--furnace { width: 240px; right: 32px; top: 24px; }
-  .cw-mockup--sentry  { width: 430px; right: -28px; bottom: 28px; top: auto; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 28px rgba(18, 18, 18, 0.16); }
 }
+
+/* Landscape screenshot cards: the image sits full-bleed at the bottom of the
+   card, below the copy, so it never overlaps the text. (Sentry, Next Route.) */
+.cw-card--shot .cw-mockup {
+  position: static;
+  width: calc(100% + 64px);
+  margin: 22px -32px -32px;
+  align-self: stretch;
+}
+.cw-card--shot .cw-mockup img { display: block; width: 100%; height: auto; }
 
 /* ============================================================
    CAPABILITIES
